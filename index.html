@@ -229,7 +229,7 @@ function baseLayout(dk){
     hovermode:'x unified',
     hoverlabel:{bgcolor:dk?'#2C2C2E':'#fff',bordercolor:dk?'rgba(255,255,255,.12)':'rgba(0,0,0,.1)',font:{size:11.5}},
     xaxis:{gridcolor:gc,linecolor:'transparent',tickcolor:'transparent',tickfont:{color:lc}},
-    yaxis:{title:{text:'Extent (million km²)',font:{size:10,color:tc}},
+    yaxis:{title:{text:'Extent (million km²)',font:{size:10,color:lc}},
       gridcolor:gc,linecolor:'transparent',tickcolor:'transparent',
       zeroline:false,tickfont:{color:lc},range:[2.2,9.0]},
     showlegend:false, bargap:0.18
@@ -252,7 +252,7 @@ function draw(){
         visible:true,color:dk?'rgba(255,255,255,.3)':'rgba(0,0,0,.2)',width:5,thickness:1.5},
       hovertemplate:'<b>%{x}</b><br>Mean: %{y:.2f} M km²<extra></extra>'
     }];
-    layout.xaxis.title={text:'Decade',font:{size:10,color:dk?'#8E8E93':'#6E6E73'}};
+    layout.xaxis.title={text:'Decade',font:{size:10,color:dk?'#fff':'#1D1D1F'}};
     anns.push({xref:'paper',yref:'paper',x:.5,y:1.02,xanchor:'center',showarrow:false,
       text:'Decade mean · whiskers = range within decade · color = mean extent',
       font:{size:9.5,color:dk?'#8E8E93':'#6E6E73'}});
@@ -310,7 +310,7 @@ function draw(){
 
     layout.xaxis.title={
       text:S.showSort?'Year (sorted by ascending extent)':'Year',
-      font:{size:10,color:dk?'#8E8E93':'#6E6E73'}
+      font:{size:10,color:dk?'#fff':'#1D1D1F'}
     };
     layout.xaxis.type='category';
     layout.xaxis.categoryorder='array';
