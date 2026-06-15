@@ -3,1186 +3,586 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Global Climate &amp; Energy — Dashboard</title>
+<title>Arctic Sea Ice Decline — 1979 to 2024</title>
 <script src="https://cdn.plot.ly/plotly-2.32.0.min.js" charset="utf-8"></script>
 <style>
-/* ── Tokens ─────────────────────────────────────────────────────────────── */
 :root {
-  --bg:         #F5F5F7;
-  --bg-card:    #FFFFFF;
-  --bg-ctrl:    #F5F5F7;
-  --bg-hover:   #F0F0F2;
-  --text:       #1D1D1F;
-  --text-2:     #6E6E73;
-  --accent:     #0071E3;
-  --accent-lt:  rgba(0,113,227,.10);
-  --red:        #FF3B30;
-  --green:      #34C759;
-  --border:     rgba(0,0,0,.08);
-  --border-md:  rgba(0,0,0,.13);
-  --shadow-sm:  0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
-  --shadow-md:  0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
-  --shadow-lg:  0 8px 32px rgba(0,0,0,.12);
-  --radius:     12px;
-  --radius-sm:  8px;
+  --bg:       #F5F5F7;
+  --card:     #FFFFFF;
+  --text:     #1D1D1F;
+  --text2:    #6E6E73;
+  --accent:   #0071E3;
+  --border:   rgba(0,0,0,.08);
+  --border2:  rgba(0,0,0,.13);
+  --hover:    #F0F0F2;
+  --r:        12px;
+  --shadow:   0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow2:  0 4px 16px rgba(0,0,0,.09);
 }
 [data-theme="dark"] {
-  --bg:        #000000;
-  --bg-card:   #1C1C1E;
-  --bg-ctrl:   #2C2C2E;
-  --bg-hover:  #3A3A3C;
-  --text:      #FFFFFF;
-  --text-2:    #8E8E93;
-  --accent:    #0A84FF;
-  --accent-lt: rgba(10,132,255,.15);
-  --border:    rgba(255,255,255,.08);
-  --border-md: rgba(255,255,255,.14);
-  --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
-  --shadow-md: 0 4px 16px rgba(0,0,0,.5);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,.7);
+  --bg:      #000;
+  --card:    #1C1C1E;
+  --text:    #FFF;
+  --text2:   #8E8E93;
+  --accent:  #0A84FF;
+  --border:  rgba(255,255,255,.08);
+  --border2: rgba(255,255,255,.14);
+  --hover:   #2C2C2E;
+  --shadow:  0 1px 3px rgba(0,0,0,.4);
+  --shadow2: 0 4px 16px rgba(0,0,0,.55);
 }
-
-/* ── Reset ──────────────────────────────────────────────────────────────── */
-*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; -webkit-font-smoothing: antialiased;
   transition: background .2s, color .2s;
 }
 
 /* ── Header ─────────────────────────────────────────────────────────────── */
-#header {
-  position: sticky; top: 0; z-index: 200;
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
+header {
+  background: var(--card); border-bottom: 1px solid var(--border);
+  padding: 18px 28px;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
 }
-.header-top {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 28px; gap: 16px;
+.hd-title h1 {
+  font-size: 1.1rem; font-weight: 600; letter-spacing: -.018em; line-height: 1.25;
 }
-.header-title h1 {
-  font-size: 1.05rem; font-weight: 600; letter-spacing: -.015em;
-  color: var(--text); line-height: 1.25;
-}
-.header-title p { font-size: .72rem; color: var(--text-2); margin-top: 2px; }
-.header-acts { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+.hd-title p { font-size: .72rem; color: var(--text2); margin-top: 3px; }
+.hd-acts { display: flex; gap: 8px; align-items: center; flex-shrink: 0; margin-top: 2px; }
 
-/* stats bar */
-.stats-bar {
-  display: flex; border-top: 1px solid var(--border); overflow-x: auto;
+/* ── KPI row ─────────────────────────────────────────────────────────────── */
+.kpi-row {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 10px;
+  padding: 16px 28px;
 }
-.stat {
-  flex: 1; min-width: 120px; padding: 10px 20px;
-  border-right: 1px solid var(--border); text-align: center;
-  cursor: default; transition: background .12s;
+.kpi {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 14px 16px; box-shadow: var(--shadow);
 }
-.stat:last-child { border-right: none; }
-.stat:hover { background: var(--bg-hover); }
-.stat-val {
-  display: block; font-size: 1rem; font-weight: 700;
-  color: var(--accent); letter-spacing: -.02em;
-  font-variant-numeric: tabular-nums;
+.kpi-val {
+  font-size: 1.6rem; font-weight: 700; letter-spacing: -.04em; line-height: 1;
+  font-variant-numeric: tabular-nums; color: var(--accent);
 }
-.stat-lbl {
-  font-size: .62rem; color: var(--text-2);
-  text-transform: uppercase; letter-spacing: .04em; margin-top: 1px;
-}
-
-/* ── Tab bar ─────────────────────────────────────────────────────────────── */
-#tabbar {
-  display: flex; background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
-  padding: 0 28px; overflow-x: auto; gap: 0;
-}
-.tab {
-  background: none; border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  padding: 12px 18px; cursor: pointer;
-  font-size: .82rem; font-weight: 500;
-  color: var(--text-2); white-space: nowrap;
-  letter-spacing: -.01em;
-  transition: color .15s, border-color .15s;
-}
-.tab:hover { color: var(--text); }
-.tab.on { color: var(--accent); border-bottom-color: var(--accent); }
-
-/* ── Controls ────────────────────────────────────────────────────────────── */
-#ctrl-bar {
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
-  padding: 10px 28px;
-  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
-}
-.ctrl-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.ctrl-lbl {
-  font-size: .7rem; color: var(--text-2);
-  font-weight: 500; text-transform: uppercase;
-  letter-spacing: .05em; white-space: nowrap;
-}
-
-/* dual range */
-.dslider { position: relative; width: 200px; height: 22px; }
-.dslider input[type=range] {
-  position: absolute; left: 0; right: 0; width: 100%;
-  pointer-events: none; -webkit-appearance: none; appearance: none;
-  background: transparent; height: 22px;
-}
-.dslider input[type=range]::-webkit-slider-runnable-track {
-  height: 3px; background: var(--border-md); border-radius: 2px;
-}
-.dslider input[type=range]::-moz-range-track {
-  height: 3px; background: var(--border-md); border-radius: 2px;
-}
-.dslider input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none; pointer-events: all;
-  width: 16px; height: 16px; border-radius: 50%;
-  background: var(--accent); border: 2px solid var(--bg-card);
-  box-shadow: 0 1px 4px rgba(0,0,0,.25); cursor: grab; margin-top: -6.5px;
-}
-.dslider input[type=range]::-moz-range-thumb {
-  pointer-events: all; border: none;
-  width: 14px; height: 14px; border-radius: 50%;
-  background: var(--accent); cursor: grab;
-}
-#slider-fill {
-  position: absolute; top: 9.5px; height: 3px;
-  background: var(--accent); border-radius: 2px;
-  pointer-events: none; z-index: 1;
-}
-.yr-disp {
-  font-weight: 600; font-size: .82rem; color: var(--text);
-  min-width: 90px; text-align: center;
-  font-variant-numeric: tabular-nums; letter-spacing: -.01em;
-}
-
-/* buttons */
-.btn {
-  background: var(--bg-ctrl); border: 1px solid var(--border-md);
-  border-radius: var(--radius-sm); padding: 5px 14px;
-  cursor: pointer; font-size: .78rem; color: var(--text);
-  font-weight: 500; transition: all .12s; white-space: nowrap;
-  letter-spacing: -.01em;
-}
-.btn:hover { background: var(--bg-hover); }
-.btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
-.btn.sm { padding: 4px 10px; font-size: .72rem; }
+.kpi-val.warm { color: #C0392B; }
+.kpi-lbl { font-size: .65rem; color: var(--text2); margin-top: 5px; line-height: 1.45; }
 
 /* ── Main layout ─────────────────────────────────────────────────────────── */
-main { max-width: 1360px; margin: 0 auto; padding: 20px 28px; }
+.main-grid {
+  display: grid; grid-template-columns: 1fr 300px;
+  gap: 10px; padding: 0 28px 28px;
+}
 
-.panel { display: none; }
-.panel.on { display: block; animation: fadein .18s ease; }
-@keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-
-/* cards */
+/* ── Cards ───────────────────────────────────────────────────────────────── */
 .card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px; box-shadow: var(--shadow-sm);
-  margin-bottom: 16px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 18px; box-shadow: var(--shadow);
 }
 .card-head {
   display: flex; align-items: flex-start; justify-content: space-between;
-  margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
+  margin-bottom: 14px; gap: 12px; flex-wrap: wrap;
 }
-.card-title {
-  font-size: .92rem; font-weight: 600; letter-spacing: -.015em; color: var(--text);
-}
-.card-sub { font-size: .7rem; color: var(--text-2); margin-top: 3px; line-height: 1.5; }
-.card-opts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.card-title { font-size: .9rem; font-weight: 600; letter-spacing: -.015em; }
+.card-sub { font-size: .68rem; color: var(--text2); margin-top: 3px; line-height: 1.5; }
+.card-opts { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
 
-/* info button + popover */
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.btn {
+  background: var(--bg); border: 1px solid var(--border2);
+  border-radius: var(--r); padding: 5px 13px;
+  cursor: pointer; font-size: .76rem; color: var(--text);
+  font-weight: 500; transition: all .12s; white-space: nowrap;
+}
+.btn:hover { background: var(--hover); }
+.btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn.sm { padding: 4px 10px; font-size: .71rem; }
+
+/* decade pills */
+.decade-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.dec-btn {
+  font-size: .72rem; font-weight: 500; border: 1px solid var(--border2);
+  border-radius: 100px; padding: 3px 10px; cursor: pointer;
+  background: var(--bg); color: var(--text2); transition: all .12s;
+}
+.dec-btn:hover { color: var(--text); background: var(--hover); }
+.dec-btn.on { color: #fff; border-color: transparent; }
+
+/* info button */
 .info-wrap { position: relative; display: inline-flex; }
 .info-btn {
   width: 20px; height: 20px; border-radius: 50%;
-  background: none; border: 1px solid var(--border-md);
-  color: var(--text-2); font-size: .68rem; font-weight: 600;
+  background: none; border: 1px solid var(--border2);
+  color: var(--text2); font-size: .68rem; font-weight: 600;
   cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
-  transition: all .12s; flex-shrink: 0; line-height: 1;
-  font-style: italic; font-family: Georgia, serif;
+  font-style: italic; font-family: Georgia, serif; transition: all .12s;
 }
-.info-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
-.info-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.info-btn:hover, .info-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 .info-pop {
   display: none; position: absolute; right: 0; top: 26px; z-index: 300;
-  width: 300px; background: var(--bg-card);
-  border: 1px solid var(--border-md); border-radius: var(--radius);
-  box-shadow: var(--shadow-lg); padding: 14px 16px;
+  width: 290px; background: var(--card);
+  border: 1px solid var(--border2); border-radius: var(--r);
+  box-shadow: var(--shadow2); padding: 14px 16px;
 }
 .info-pop.open { display: block; }
-.info-pop p { font-size: .74rem; color: var(--text-2); line-height: 1.6; margin-bottom: 8px; }
+.info-pop p { font-size: .73rem; color: var(--text2); line-height: 1.6; margin-bottom: 8px; }
 .info-pop p:last-child { margin-bottom: 0; }
-.info-pop strong { color: var(--text); font-weight: 600; }
+.info-pop strong { color: var(--text); }
 
-/* stats / insight strip */
-.kpi-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px; margin-bottom: 16px;
+/* detail panel */
+.detail-title {
+  font-size: .88rem; font-weight: 600; letter-spacing: -.015em; margin-bottom: 4px;
 }
-.kpi {
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 16px 18px;
-  box-shadow: var(--shadow-sm);
-}
-.kpi-val {
-  font-size: 1.7rem; font-weight: 700; color: var(--accent);
-  letter-spacing: -.04em; line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-.kpi-lbl { font-size: .68rem; color: var(--text-2); margin-top: 5px; line-height: 1.4; }
-
-/* overview grid */
-.ov-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.mini-card {
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 14px;
-  box-shadow: var(--shadow-sm); cursor: pointer; transition: all .16s;
-}
-.mini-card:hover {
-  box-shadow: var(--shadow-md); border-color: rgba(0,113,227,.3);
-  transform: translateY(-1px);
-}
-.mini-hd {
-  font-size: .68rem; font-weight: 600; color: var(--text-2);
-  text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px;
-}
-.mini-hint {
-  font-size: .62rem; color: var(--text-2); margin-top: 6px;
-  opacity: .7;
-}
-
-/* map layout */
-.map-wrap { display: grid; grid-template-columns: 1fr 270px; gap: 12px; }
-.detail-panel {
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow-sm);
-}
-.detail-panel h3 {
-  font-size: .9rem; font-weight: 600; letter-spacing: -.015em;
-  margin-bottom: 12px; color: var(--text);
-}
-.detail-row {
+.detail-sub { font-size: .67rem; color: var(--text2); margin-bottom: 14px; line-height: 1.5; }
+.stat-row {
   display: flex; justify-content: space-between; align-items: baseline;
-  padding: 8px 0; border-bottom: 1px solid var(--border);
-  font-size: .78rem;
+  padding: 7px 0; border-bottom: 1px solid var(--border);
+  font-size: .77rem;
 }
-.detail-row:last-of-type { border-bottom: none; }
-.detail-lbl { color: var(--text-2); }
-.detail-val { font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
-.detail-hint {
-  font-size: .68rem; color: var(--text-2); line-height: 1.5;
-  margin-bottom: 14px;
-}
-
-/* pill toggles */
-.pill {
-  display: inline-flex; align-items: center; gap: 5px; cursor: pointer;
-  font-size: .74rem; color: var(--text-2); padding: 4px 10px;
-  border-radius: 100px; border: 1px solid var(--border-md);
-  background: var(--bg-ctrl); transition: all .12s; user-select: none;
-  font-weight: 500;
-}
-.pill:hover { color: var(--text); border-color: var(--border-md); background: var(--bg-hover); }
-.pill.on { background: var(--accent-lt); border-color: var(--accent); color: var(--accent); }
-.pill input { display: none; }
-.dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-
-/* country buttons */
-.ctry-grid { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
-.ctry-btn {
-  background: var(--bg-ctrl); border: 1px solid var(--border-md);
-  border-radius: 100px; padding: 3px 10px; cursor: pointer;
-  font-size: .72rem; color: var(--text-2); font-weight: 500;
-  transition: all .12s;
-}
-.ctry-btn:hover { color: var(--text); background: var(--bg-hover); }
-.ctry-btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
-
-/* select */
-select {
-  background: var(--bg-ctrl); border: 1px solid var(--border-md);
-  border-radius: var(--radius-sm); padding: 5px 10px;
-  font-size: .78rem; color: var(--text); cursor: pointer;
-  font-weight: 500; -webkit-appearance: none; appearance: none;
-  padding-right: 24px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236E6E73'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 8px center;
+.stat-row:last-of-type { border-bottom: none; }
+.stat-lbl { color: var(--text2); }
+.stat-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+.placeholder-hint {
+  font-size: .73rem; color: var(--text2); line-height: 1.6;
+  padding: 12px 0; text-align: center; opacity: .7;
 }
 
 /* scrollbar */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
 /* footer */
 footer {
-  margin-top: 32px; padding: 16px 28px;
-  border-top: 1px solid var(--border);
+  padding: 14px 28px; border-top: 1px solid var(--border);
+  text-align: center;
 }
-footer p { font-size: .66rem; color: var(--text-2); line-height: 1.8; }
+footer p { font-size: .65rem; color: var(--text2); line-height: 1.8; }
 
-/* keyboard hint */
-.kbd-hint {
-  font-size: .68rem; color: var(--text-2); margin-left: auto;
-  letter-spacing: .01em;
+/* responsive */
+@media (max-width: 860px) {
+  .main-grid { grid-template-columns: 1fr; }
+  .kpi-row { grid-template-columns: 1fr 1fr; }
 }
-
-/* ── Responsive ──────────────────────────────────────────────────────────── */
-@media (max-width: 900px) {
-  .ov-grid, .map-wrap, .kpi-row { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 580px) {
-  .ov-grid, .map-wrap, .kpi-row { grid-template-columns: 1fr; }
-  .dslider { width: 130px; }
-  main, #ctrl-bar, .header-top { padding-left: 16px; padding-right: 16px; }
-  #tabbar { padding: 0 16px; }
+@media (max-width: 520px) {
+  .kpi-row { grid-template-columns: 1fr 1fr; }
+  header, .kpi-row, .main-grid { padding-left: 16px; padding-right: 16px; }
 }
 </style>
 </head>
 <body>
 
-<!-- ════════ HEADER ════════════════════════════════════════════════════════ -->
-<div id="header">
-  <div class="header-top">
-    <div class="header-title">
-      <h1>Global Climate &amp; Energy</h1>
-      <p>Fossil fuels · Global warming · The energy transition · 1950–2023</p>
-    </div>
-    <div class="header-acts">
-      <button class="btn sm" id="theme-btn" onclick="toggleTheme()">Dark</button>
-      <button class="btn sm" onclick="dlChart()">Export PNG</button>
-    </div>
+<!-- Header -->
+<header>
+  <div class="hd-title">
+    <h1>Arctic Sea Ice Decline</h1>
+    <p>September minimum extent &middot; 1979 to 2024 &middot; Northern Hemisphere</p>
   </div>
-  <div class="stats-bar">
-    <div class="stat">
-      <span class="stat-val">+1.17°C</span>
-      <span class="stat-lbl">Record anomaly (2023)</span>
-    </div>
-    <div class="stat">
-      <span class="stat-val">422 ppm</span>
-      <span class="stat-lbl">Atmospheric CO₂ (2023)</span>
-    </div>
-    <div class="stat">
-      <span class="stat-val">+105 ppm</span>
-      <span class="stat-lbl">CO₂ rise since 1960</span>
-    </div>
-    <div class="stat">
-      <span class="stat-val">16%</span>
-      <span class="stat-lbl">Wind + Solar share (2022)</span>
-    </div>
-    <div class="stat">
-      <span class="stat-val" style="color:var(--red)">310×</span>
-      <span class="stat-lbl">Qatar vs Ethiopia per capita</span>
-    </div>
+  <div class="hd-acts">
+    <button class="btn sm" id="theme-btn" onclick="toggleTheme()">Dark</button>
+    <button class="btn sm" id="play-btn" onclick="togglePlay()">Play</button>
+    <button class="btn sm" onclick="resetAnim()">Reset</button>
+  </div>
+</header>
+
+<!-- KPIs -->
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="kpi-val">7.05</div>
+    <div class="kpi-lbl">million km² in 1979<br>(first full year on record)</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-val warm">4.28</div>
+    <div class="kpi-lbl">million km² in 2024<br>(latest measurement)</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-val warm">&minus;39%</div>
+    <div class="kpi-lbl">total loss since 1979<br>(&minus;2.77 million km²)</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-val warm">&minus;0.73</div>
+    <div class="kpi-lbl">million km² per decade<br>(linear trend)</div>
   </div>
 </div>
 
-<!-- ════════ TABS ══════════════════════════════════════════════════════════ -->
-<div id="tabbar">
-  <button class="tab on"  data-tab="overview">Overview</button>
-  <button class="tab"     data-tab="temperature">Temperature &amp; CO₂</button>
-  <button class="tab"     data-tab="energy">Energy Transition</button>
-  <button class="tab"     data-tab="map">Emissions Map</button>
-  <button class="tab"     data-tab="compare">Renewable Growth</button>
+<!-- Main grid -->
+<div class="main-grid">
+
+  <!-- Time series card -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">September Minimum Extent, 1979–2024</div>
+        <div class="card-sub">Each point is one year &middot; Click a point to see its annual cycle &middot; Color by decade</div>
+      </div>
+      <div class="card-opts">
+        <button class="btn sm" id="btn-trend" onclick="toggleTrend()">Trend line</button>
+        <div class="info-wrap">
+          <button class="info-btn" onclick="toggleInfo(this)" aria-label="About this chart">i</button>
+          <div class="info-pop">
+            <p><strong>What you see</strong><br>Arctic sea ice reaches its annual minimum in September after the summer melt season. This chart plots that September minimum each year from 1979 (when continuous satellite records began) to 2024. Each dot is one year; the color groups it by decade.</p>
+            <p><strong>How to interact</strong><br>Click any point to see the full 12-month seasonal cycle for that year compared to the 1980s average. Toggle the trend line to see the long-term decline. Use the decade buttons to isolate periods. Press Play to animate.</p>
+            <p><strong>Source</strong><br>National Snow and Ice Data Center (NSIDC), Sea Ice Index v3.0. NASA Earth Science.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Decade filter -->
+    <div class="decade-row" id="dec-row"></div>
+    <div id="chart-main" style="height:400px"></div>
+  </div>
+
+  <!-- Detail panel -->
+  <div class="card" id="detail-card">
+    <div class="detail-title" id="det-title">Select a year</div>
+    <div class="detail-sub" id="det-sub">Click any point on the chart to see that year's full seasonal ice cycle compared to the 1980s average.</div>
+    <div id="det-stats"></div>
+    <div id="chart-cycle" style="height:230px;margin-top:14px"></div>
+  </div>
+
 </div>
-
-<!-- ════════ CONTROLS ═════════════════════════════════════════════════════ -->
-<div id="ctrl-bar">
-  <div class="ctrl-group">
-    <span class="ctrl-lbl">Year range</span>
-    <div class="dslider" id="dslider">
-      <div id="slider-fill"></div>
-      <input type="range" id="sl-lo" min="1950" max="2022" value="1950" step="1">
-      <input type="range" id="sl-hi" min="1951" max="2023" value="2023" step="1">
-    </div>
-    <span class="yr-disp" id="yr-disp">1950 – 2023</span>
-  </div>
-  <div class="ctrl-group">
-    <button class="btn" id="play-btn" onclick="togglePlay()">Play</button>
-    <button class="btn" onclick="resetAll()">Reset</button>
-  </div>
-  <span class="kbd-hint">Arrow keys to navigate tabs &middot; Space to play / pause</span>
-</div>
-
-<!-- ════════ MAIN ══════════════════════════════════════════════════════════ -->
-<main>
-
-  <!-- OVERVIEW ──────────────────────────────────────────────────────────── -->
-  <div class="panel on" id="panel-overview">
-    <div class="kpi-row">
-      <div class="kpi">
-        <div class="kpi-val" id="ins-avg">+0.40°C</div>
-        <div class="kpi-lbl">Average temperature anomaly in selected range</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-val" id="ins-co2rise">+105 ppm</div>
-        <div class="kpi-lbl">CO₂ rise in selected range</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-val">42×</div>
-        <div class="kpi-lbl">Solar electricity growth, 2000 to 2022</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-val" id="ins-hot">2023</div>
-        <div class="kpi-lbl">Hottest year on record in selected range</div>
-      </div>
-    </div>
-    <div class="ov-grid">
-      <div class="mini-card" onclick="switchTab('temperature')">
-        <div class="mini-hd">Temperature anomaly</div>
-        <div id="mini-temp" style="height:190px"></div>
-        <div class="mini-hint">Click to explore full chart</div>
-      </div>
-      <div class="mini-card" onclick="switchTab('energy')">
-        <div class="mini-hd">Energy transition</div>
-        <div id="mini-energy" style="height:190px"></div>
-        <div class="mini-hint">Click to explore full chart</div>
-      </div>
-      <div class="mini-card" onclick="switchTab('map')">
-        <div class="mini-hd">CO₂ per capita</div>
-        <div id="mini-map" style="height:190px"></div>
-        <div class="mini-hint">Click to explore full chart</div>
-      </div>
-      <div class="mini-card" onclick="switchTab('compare')">
-        <div class="mini-hd">Renewable growth</div>
-        <div id="mini-compare" style="height:190px"></div>
-        <div class="mini-hint">Click to explore full chart</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TEMPERATURE ───────────────────────────────────────────────────────── -->
-  <div class="panel" id="panel-temperature">
-    <div class="card">
-      <div class="card-head">
-        <div>
-          <div class="card-title">Global Surface Temperature Anomaly &amp; Atmospheric CO₂</div>
-          <div class="card-sub">Annual anomaly vs 1951–1980 baseline · 10-year rolling mean · CO₂ at Mauna Loa, Hawaii</div>
-        </div>
-        <div class="card-opts">
-          <label class="pill on" id="pill-co2">
-            <input type="checkbox" id="chk-co2" checked>
-            <span class="dot" style="background:#B8860B"></span>CO₂ overlay
-          </label>
-          <label class="pill on" id="pill-roll">
-            <input type="checkbox" id="chk-roll" checked>
-            <span class="dot" style="background:var(--text)"></span>10-yr mean
-          </label>
-          <label class="pill on" id="pill-paris">
-            <input type="checkbox" id="chk-paris" checked>
-            <span class="dot" style="background:var(--red)"></span>Paris 2015
-          </label>
-          <div class="info-wrap">
-            <button class="info-btn" onclick="toggleInfo(this)" aria-label="Chart information">i</button>
-            <div class="info-pop">
-              <p><strong>What you see</strong><br>Each bar is one year's global mean surface temperature anomaly, measured against the 1951–1980 average. Warmer tones = greater deviation above baseline. The thin line is a 10-year centred rolling mean, smoothing out year-to-year noise. The gold line (right axis) shows atmospheric CO₂ concentration.</p>
-              <p><strong>Source</strong><br>NASA GISS Surface Temperature Analysis (GISTEMP v4). NOAA Global Monitoring Laboratory, Mauna Loa Observatory.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div id="chart-temp" style="height:430px"></div>
-    </div>
-  </div>
-
-  <!-- ENERGY ────────────────────────────────────────────────────────────── -->
-  <div class="panel" id="panel-energy">
-    <div class="card">
-      <div class="card-head">
-        <div>
-          <div class="card-title">Global Electricity Generation by Source, 2000–2022</div>
-          <div class="card-sub">Toggle individual sources · Switch between absolute and percentage views</div>
-        </div>
-        <div class="card-opts">
-          <select id="e-mode" onchange="drawEnergy()">
-            <option value="abs">Petawatt-hours</option>
-            <option value="pct">Share (%)</option>
-          </select>
-          <div class="info-wrap">
-            <button class="info-btn" onclick="toggleInfo(this)" aria-label="Chart information">i</button>
-            <div class="info-pop">
-              <p><strong>What you see</strong><br>A stacked area chart of global electricity generation by energy source. In absolute mode the y-axis shows petawatt-hours (PWh). In percentage mode, each source's share of the total is shown, making the energy transition visible as fossil fuels' share shrinks and renewables grow.</p>
-              <p><strong>Interaction</strong><br>Toggle individual sources using the pills below the title. The year-range slider above filters the time window.</p>
-              <p><strong>Source</strong><br>IEA World Energy Statistics 2023.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="card-opts" id="src-pills" style="margin-bottom:14px;flex-wrap:wrap"></div>
-      <div id="chart-energy" style="height:420px"></div>
-    </div>
-  </div>
-
-  <!-- MAP ───────────────────────────────────────────────────────────────── -->
-  <div class="panel" id="panel-map">
-    <div class="map-wrap">
-      <div class="card" style="margin-bottom:0">
-        <div class="card-head">
-          <div>
-            <div class="card-title">CO₂ Emissions per Capita by Country (2021)</div>
-            <div class="card-sub">Tonnes per person per year · Click a country to compare</div>
-          </div>
-          <div class="info-wrap">
-            <button class="info-btn" onclick="toggleInfo(this)" aria-label="Chart information">i</button>
-            <div class="info-pop" style="right:0;left:auto">
-              <p><strong>What you see</strong><br>A choropleth map showing annual fossil CO₂ emissions per person in 2021. Darker reds indicate higher per-capita emissions. The map covers 40 countries representing a wide range of development stages and energy mixes.</p>
-              <p><strong>Interaction</strong><br>Click any country to open a comparison panel on the right, which benchmarks it against Ethiopia, Brazil, the world average, and Qatar.</p>
-              <p><strong>Source</strong><br>Global Carbon Project; Our World in Data (2022).</p>
-            </div>
-          </div>
-        </div>
-        <div id="chart-map" style="height:430px"></div>
-      </div>
-      <div class="detail-panel" id="map-detail">
-        <h3 id="d-name">Select a country</h3>
-        <p class="detail-hint">Click any country on the map to compare its per-capita CO₂ emissions.</p>
-        <div class="detail-row"><span class="detail-lbl">CO₂ per capita</span><span class="detail-val" id="d-val">—</span></div>
-        <div class="detail-row"><span class="detail-lbl">vs world avg (4.7 t)</span><span class="detail-val" id="d-avg">—</span></div>
-        <div class="detail-row"><span class="detail-lbl">vs Qatar (31 t)</span><span class="detail-val" id="d-qt">—</span></div>
-        <div class="detail-row"><span class="detail-lbl">vs Ethiopia (0.1 t)</span><span class="detail-val" id="d-eth">—</span></div>
-        <div id="d-bar" style="height:165px;margin-top:14px"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- COMPARE ───────────────────────────────────────────────────────────── -->
-  <div class="panel" id="panel-compare">
-    <div class="card">
-      <div class="card-head">
-        <div>
-          <div class="card-title">Renewable Share in Electricity Generation: 2005 to 2022</div>
-          <div class="card-sub">Slope chart · Each line is one country · Steeper slope = faster transition</div>
-        </div>
-        <div class="card-opts">
-          <button class="btn sm" onclick="selAll()">All</button>
-          <button class="btn sm" onclick="selNone()">None</button>
-          <button class="btn sm" onclick="selGainers()">Big gainers</button>
-          <div class="info-wrap">
-            <button class="info-btn" onclick="toggleInfo(this)" aria-label="Chart information">i</button>
-            <div class="info-pop" style="right:0">
-              <p><strong>What you see</strong><br>A slope chart comparing each country's renewable electricity share between 2005 and 2022. The left anchor is 2005, the right is 2022. Steeper upward slopes encode faster transitions. Blue tones indicate large gains; red lines indicate stagnation or decline.</p>
-              <p><strong>Interaction</strong><br>Toggle individual countries using the buttons below, or use the presets: All, None, and Big gainers (countries with more than 20 percentage-point gain).</p>
-              <p><strong>Source</strong><br>IEA Renewables 2023; Our World in Data.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div id="ctry-btns" class="ctry-grid"></div>
-      <div id="chart-compare" style="height:430px"></div>
-    </div>
-  </div>
-
-</main>
 
 <footer>
-  <p>
-    NASA GISS GISTEMP v4 &middot;
-    NOAA Global Monitoring Laboratory (Mauna Loa CO₂) &middot;
-    IEA World Energy Statistics 2023 &middot;
-    Global Carbon Project &middot;
-    Our World in Data &middot;
-    IEA Renewables 2023
-  </p>
+  <p>National Snow and Ice Data Center (NSIDC), Sea Ice Index v3.0 &middot; NASA Earth Science Division &middot; <em>nsidc.org/data/seaice_index</em></p>
 </footer>
 
-<!-- ════════ SCRIPT ════════════════════════════════════════════════════════ -->
 <script>
 'use strict';
 
 /* ── DATA ──────────────────────────────────────────────────────────────── */
-const YT = Array.from({length:74},(_,i)=>1950+i);
-const TA = [
-  -0.17,-0.01, 0.02, 0.08,-0.13,-0.14,-0.03, 0.03, 0.06, 0.03,
-  -0.03, 0.06, 0.03, 0.05,-0.20,-0.11,-0.06,-0.02,-0.07, 0.08,
-   0.03, 0.14, 0.01, 0.16,-0.07,-0.01,-0.10, 0.18, 0.07, 0.16,
-   0.26, 0.32, 0.14, 0.31, 0.16, 0.12, 0.18, 0.33, 0.40, 0.29,
-   0.44, 0.41, 0.22, 0.24, 0.31, 0.45, 0.35, 0.46, 0.63, 0.40,
-   0.42, 0.54, 0.63, 0.62, 0.54, 0.68, 0.61, 0.62, 0.54, 0.64,
-   0.72, 0.61, 0.64, 0.68, 0.75, 0.87, 1.01, 0.92, 0.83, 0.98,
-   1.02, 0.85, 0.89, 1.17
+const YEARS = Array.from({length:46},(_,i)=>1979+i);
+const SEP = [
+  7.05,7.67,7.06,7.36,7.33,6.84,6.98,7.53,7.54,7.43,
+  7.17,6.15,6.57,7.51,6.34,7.03,6.11,7.84,6.70,6.63,
+  6.20,6.31,6.74,5.95,6.13,6.04,5.57,5.91,4.17,4.67,
+  5.13,4.93,4.34,3.41,5.10,5.03,4.41,4.14,4.64,4.59,
+  4.15,3.74,4.72,4.67,4.23,4.28
 ];
-const YC = Array.from({length:64},(_,i)=>1960+i);
-const CO2 = [
-  316.91,317.64,318.45,318.99,319.62,320.04,321.38,322.16,323.04,324.62,
-  325.68,326.32,327.45,329.68,330.18,331.08,332.05,333.78,335.40,336.84,
-  338.75,340.11,341.45,343.05,344.65,346.12,347.42,348.93,351.48,353.20,
-  354.45,355.70,356.51,357.20,360.18,362.00,363.80,366.65,368.38,369.55,
-  371.14,373.28,375.77,377.49,379.98,381.90,383.79,385.60,387.43,389.90,
-  391.65,393.85,396.48,398.65,400.83,404.24,406.55,408.72,411.44,414.24,
-  416.45,418.56,421.08,422.52
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// Monthly extent (millions km²) for key years
+const MONTHLY = {
+  1980: [14.0,15.5,16.1,15.5,13.3,11.2,8.7,7.8,7.7,9.9,12.2,13.5],
+  1996: [14.0,15.7,16.3,15.8,13.5,11.4,9.0,7.9,7.9,9.7,12.0,13.7],
+  2007: [13.4,14.5,15.1,14.6,12.8,10.6,7.7,5.6,4.2,6.7,10.2,12.2],
+  2012: [13.9,15.3,15.9,15.1,12.9,10.8,7.5,4.7,3.4,6.2, 9.8,12.0],
+  2020: [13.5,14.9,15.4,14.6,12.5,10.3,7.1,4.8,3.7,6.3, 9.9,12.2],
+  2023: [13.8,15.0,15.7,15.0,12.8,10.5,7.8,5.5,4.2,7.0,10.3,12.4],
+  2024: [13.7,14.8,15.5,14.8,12.6,10.4,7.6,5.3,4.3,6.8,10.1,12.3]
+};
+// 1980s average (baseline)
+const BASE_80S = [13.9,15.4,16.1,15.5,13.3,11.2,8.7,7.7,7.3,9.2,11.9,13.4];
+
+// decade color map
+const DEC_META = [
+  {label:'1980s', years:[1979,1980,1981,1982,1983,1984,1985,1986,1987,1988,1989], color:'#1E6091'},
+  {label:'1990s', years:[1990,1991,1992,1993,1994,1995,1996,1997,1998,1999],     color:'#0071E3'},
+  {label:'2000s', years:[2000,2001,2002,2003,2004,2005,2006,2007,2008,2009],     color:'#FF9F0A'},
+  {label:'2010s', years:[2010,2011,2012,2013,2014,2015,2016,2017,2018,2019],     color:'#FF6B35'},
+  {label:'2020s', years:[2020,2021,2022,2023,2024],                              color:'#C0392B'},
 ];
-const YE = Array.from({length:23},(_,i)=>2000+i);
-const EL = {
-  Coal:    [5990,6320,6550,6820,7100,7450,7900,8200,8650,8900,9200,9350,9400,9600,9550,9250,9150,9200,9850,9560,9220,9300,8900],
-  Gas:     [2600,2700,2800,2900,3100,3300,3500,3700,3950,4000,4150,4400,4600,4750,4800,4850,5100,5400,5650,6100,6300,6400,6500],
-  Nuclear: [2590,2650,2600,2520,2580,2628,2660,2710,2731,2757,2756,2608,2461,2359,2410,2475,2490,2497,2563,2657,2626,2653,2630],
-  Hydro:   [2645,2560,2620,2680,2800,2998,3040,3120,3288,3230,3431,3550,3680,3782,3891,3940,4080,4185,4193,4222,4355,4370,4370],
-  Wind:    [31,39,52,61,82,104,132,170,220,278,341,435,521,635,710,828,960,1120,1270,1430,1600,1870,2100],
-  Solar:   [1,1,2,2,3,3,4,7,12,20,32,65,100,140,185,251,328,444,584,720,844,1000,1324],
-  Biomass: [410,430,455,480,505,535,570,615,670,720,775,810,850,900,950,990,1030,1070,1110,1140,1170,1200,1230]
-};
-const EC = {
-  Coal:'#3A3A3C', Gas:'#8E44AD', Nuclear:'#FF3B30',
-  Hydro:'#0071E3', Wind:'#30D158', Solar:'#FF9F0A', Biomass:'#34C759'
-};
-const MAP = {
-  iso3:['QAT','KWT','ARE','AUS','USA','CAN','SAU','KAZ','RUS','DEU',
-        'JPN','KOR','CHN','GBR','FRA','BRA','IND','IDN','NGA','COD',
-        'ETH','BGD','PAK','MEX','ARG','ZAF','TUR','POL','ITA','ESP',
-        'NLD','SWE','CHE','AUT','NOR','FIN','UKR','IRN','EGY','THA'],
-  co2: [31.0,23.0,20.5,14.8,14.4,14.2,14.0,13.0,11.5,7.7,
-         8.5,11.6,8.0,4.7,4.3,2.2,1.9,2.3,0.6,0.1,
-         0.1,0.5,0.9,3.3,4.2,7.0,5.2,8.6,5.2,4.9,
-         8.1,3.5,3.7,6.4,6.5,6.4,3.4,8.3,2.2,3.7],
-  name:['Qatar','Kuwait','UAE','Australia','USA','Canada','Saudi Arabia','Kazakhstan','Russia','Germany',
-        'Japan','South Korea','China','UK','France','Brazil','India','Indonesia','Nigeria','DR Congo',
-        'Ethiopia','Bangladesh','Pakistan','Mexico','Argentina','South Africa','Turkey','Poland','Italy','Spain',
-        'Netherlands','Sweden','Switzerland','Austria','Norway','Finland','Ukraine','Iran','Egypt','Thailand']
-};
-const RD = {
-  Norway:{a:98.8,b:98.9}, Iceland:{a:99.9,b:99.8}, Sweden:{a:44.8,b:62.3},
-  Denmark:{a:19.6,b:63.0}, Germany:{a:10.4,b:44.8}, UK:{a:4.3,b:42.0},
-  Spain:{a:20.0,b:43.7}, France:{a:13.1,b:26.0}, Italy:{a:14.7,b:38.1},
-  USA:{a:8.6,b:22.6}, China:{a:16.1,b:30.3}, India:{a:17.4,b:24.2},
-  Brazil:{a:80.0,b:83.1}, Australia:{a:7.4,b:35.9}, Japan:{a:10.7,b:22.8}
-};
+function yearColor(y){
+  for(const d of DEC_META) if(d.years.includes(y)) return d.color;
+  return '#6E6E73';
+}
+function yearDecade(y){
+  for(const d of DEC_META) if(d.years.includes(y)) return d.label;
+  return '';
+}
 
 /* ── STATE ─────────────────────────────────────────────────────────────── */
 const S = {
-  tab:'overview', ys:1950, ye:2023,
-  playing:false, timer:null, theme:'light',
-  src: new Set(Object.keys(EL)),
-  ctry: new Set(Object.keys(RD))
+  theme:'light', showTrend:false,
+  activeDec: new Set(DEC_META.map(d=>d.label)),
+  selectedYear: null, playing:false, timer:null, animIdx:0
 };
 
-/* ── INFO POPOVERS ─────────────────────────────────────────────────────── */
+/* ── INFO POPOVER ───────────────────────────────────────────────────────── */
 function toggleInfo(btn){
-  const pop = btn.nextElementSibling;
-  const isOpen = pop.classList.contains('open');
+  const pop=btn.nextElementSibling;
+  const wasOpen=pop.classList.contains('open');
   document.querySelectorAll('.info-pop.open').forEach(p=>p.classList.remove('open'));
   document.querySelectorAll('.info-btn.active').forEach(b=>b.classList.remove('active'));
-  if(!isOpen){ pop.classList.add('open'); btn.classList.add('active'); }
+  if(!wasOpen){pop.classList.add('open');btn.classList.add('active');}
 }
-document.addEventListener('click', e => {
+document.addEventListener('click',e=>{
   if(!e.target.closest('.info-wrap')){
     document.querySelectorAll('.info-pop.open').forEach(p=>p.classList.remove('open'));
     document.querySelectorAll('.info-btn.active').forEach(b=>b.classList.remove('active'));
   }
 });
 
-/* ── THEME ─────────────────────────────────────────────────────────────── */
+/* ── THEME ──────────────────────────────────────────────────────────────── */
 function toggleTheme(){
-  S.theme = S.theme==='light'?'dark':'light';
-  document.documentElement.setAttribute('data-theme', S.theme);
-  document.getElementById('theme-btn').textContent = S.theme==='dark'?'Light':'Dark';
-  refresh();
+  S.theme=S.theme==='light'?'dark':'light';
+  document.documentElement.setAttribute('data-theme',S.theme);
+  document.getElementById('theme-btn').textContent=S.theme==='dark'?'Light':'Dark';
+  drawMain(); if(S.selectedYear) drawCycle(S.selectedYear);
 }
 
-/* ── PLOTLY BASE ────────────────────────────────────────────────────────── */
-function base(extra={}){
-  const dk = S.theme==='dark';
-  return {
-    paper_bgcolor: dk?'#1C1C1E':'#FFFFFF',
-    plot_bgcolor:  dk?'#1C1C1E':'#FFFFFF',
-    font: {family:'-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif',
-           color: dk?'#FFFFFF':'#1D1D1F', size:11},
-    margin: {t:36,r:60,b:46,l:58},
-    showlegend: false,
-    hovermode: 'x unified',
-    hoverlabel: {
-      bgcolor: dk?'#2C2C2E':'#FFFFFF',
-      bordercolor: dk?'rgba(255,255,255,.15)':'rgba(0,0,0,.1)',
-      font: {size:11.5, color:dk?'#FFFFFF':'#1D1D1F'}
-    },
-    xaxis: {gridcolor:dk?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)',
-            linecolor:'transparent', zeroline:false,
-            tickcolor:'transparent', tickfont:{color:dk?'#8E8E93':'#6E6E73'}},
-    yaxis: {gridcolor:dk?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)',
-            linecolor:'transparent', zeroline:false,
-            tickcolor:'transparent', tickfont:{color:dk?'#8E8E93':'#6E6E73'}},
-    ...extra
-  };
+/* ── DECADE BUTTONS ─────────────────────────────────────────────────────── */
+function initDecButtons(){
+  const row=document.getElementById('dec-row');
+  DEC_META.forEach(d=>{
+    const b=document.createElement('button');
+    b.className='dec-btn on'; b.textContent=d.label; b.dataset.dec=d.label;
+    b.style.setProperty('--dc',d.color);
+    b.style.background=d.color;
+    b.addEventListener('click',()=>{
+      if(S.activeDec.has(d.label)){
+        S.activeDec.delete(d.label); b.classList.remove('on');
+        b.style.background=''; b.style.color='';
+      } else {
+        S.activeDec.add(d.label); b.classList.add('on');
+        b.style.background=d.color; b.style.color='#fff';
+      }
+      drawMain();
+    });
+    row.appendChild(b);
+  });
+  // set initial styles
+  document.querySelectorAll('.dec-btn').forEach(b=>{
+    if(b.classList.contains('on')) b.style.color='#fff';
+  });
 }
-const CFG = {
-  responsive:true, displaylogo:false, displayModeBar:true,
-  modeBarButtonsToRemove:['lasso2d','select2d','autoScale2d'],
-  toImageButtonOptions:{format:'png',width:1600,height:900,scale:2,filename:'climate-dashboard'}
-};
-const CFG0 = {responsive:true, displayModeBar:false};
 
-/* ── SLIDER ─────────────────────────────────────────────────────────────── */
-function initSliders(){
-  const lo=document.getElementById('sl-lo'), hi=document.getElementById('sl-hi');
-  function sync(){
-    let a=+lo.value, b=+hi.value;
-    if(a>b-4){a=b-4; lo.value=a;}
-    S.ys=a; S.ye=b;
-    document.getElementById('yr-disp').textContent=`${a} – ${b}`;
-    fillSlider(); refresh(); updateInsights();
+/* ── TREND LINE ─────────────────────────────────────────────────────────── */
+function toggleTrend(){
+  S.showTrend=!S.showTrend;
+  document.getElementById('btn-trend').classList.toggle('on',S.showTrend);
+  drawMain();
+}
+function linRegression(xs,ys){
+  const n=xs.length;
+  const mx=xs.reduce((a,b)=>a+b,0)/n, my=ys.reduce((a,b)=>a+b,0)/n;
+  let num=0,den=0;
+  xs.forEach((x,i)=>{num+=(x-mx)*(ys[i]-my);den+=(x-mx)**2;});
+  const slope=num/den, intercept=my-slope*mx;
+  return {slope,intercept};
+}
+
+/* ── DRAW MAIN CHART ────────────────────────────────────────────────────── */
+function drawMain(){
+  const dk=S.theme==='dark';
+  const bg=dk?'#1C1C1E':'#FFFFFF';
+  const gc=dk?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
+  const tc=dk?'#8E8E93':'#6E6E73';
+
+  // filter by active decades
+  const filtY=YEARS.filter(y=>S.activeDec.has(yearDecade(y)));
+  const filtV=filtY.map(y=>SEP[y-1979]);
+
+  // scatter by decade
+  const traces=DEC_META
+    .filter(d=>S.activeDec.has(d.label))
+    .map(d=>{
+      const ys=d.years.filter(y=>y>=1979&&y<=2024);
+      const vs=ys.map(y=>SEP[y-1979]);
+      const isSelected=ys.includes(S.selectedYear);
+      return {
+        x:ys, y:vs, mode:'markers+lines',
+        name:d.label, type:'scatter',
+        marker:{
+          color:vs.map((_,i)=>ys[i]===S.selectedYear?'#FFFFFF':d.color),
+          size:vs.map((_,i)=>ys[i]===S.selectedYear?10:6.5),
+          line:{color:d.color, width:vs.map((_,i)=>ys[i]===S.selectedYear?2.5:0)}
+        },
+        line:{color:d.color,width:1.4,dash:'solid'},
+        hovertemplate:'<b>%{x}</b><br>Extent: %{y:.2f} M km²<extra>'+d.label+'</extra>',
+        legendgroup:d.label, showlegend:true
+      };
+    });
+
+  // record annotations
+  const RECORDS=[{y:2012,v:3.41,label:'Record low<br>3.41'},{y:2007,v:4.17,label:'Then-record<br>4.17'}];
+  const anns=RECORDS
+    .filter(r=>S.activeDec.has(yearDecade(r.y)))
+    .map(r=>({
+      x:r.y, y:r.v, xref:'x', yref:'y',
+      text:r.label, showarrow:true, arrowhead:0, arrowsize:.8,
+      arrowcolor:dk?'#8E8E93':'#6E6E73', ax:0, ay:-34,
+      font:{size:9, color:dk?'#8E8E93':'#6E6E73'}, bgcolor:'transparent', borderwidth:0
+    }));
+
+  // trend line
+  if(S.showTrend&&filtY.length>2){
+    const {slope,intercept}=linRegression(filtY,filtV);
+    const x0=Math.min(...filtY), x1=Math.max(...filtY);
+    traces.push({
+      x:[x0,x1], y:[slope*x0+intercept, slope*x1+intercept],
+      mode:'lines', name:'Trend', type:'scatter',
+      line:{color:'#FF3B30',width:1.6,dash:'dot'},
+      hovertemplate:`Trend: %{y:.2f} M km²<extra></extra>`,
+      showlegend:true
+    });
   }
-  lo.addEventListener('input',sync);
-  hi.addEventListener('input',sync);
-  fillSlider();
+
+  const layout={
+    paper_bgcolor:bg, plot_bgcolor:bg,
+    font:{family:'-apple-system,"SF Pro Text",sans-serif',color:dk?'#FFF':'#1D1D1F',size:11},
+    margin:{t:20,r:20,b:46,l:56},
+    hovermode:'closest',
+    hoverlabel:{bgcolor:dk?'#2C2C2E':'#FFF',bordercolor:dk?'rgba(255,255,255,.15)':'rgba(0,0,0,.1)',font:{size:11}},
+    xaxis:{title:{text:'Year',font:{size:10,color:tc}},range:[1978,2025],
+      gridcolor:gc,linecolor:'transparent',tickcolor:'transparent',
+      tickfont:{color:tc}},
+    yaxis:{title:{text:'Extent (million km²)',font:{size:10,color:tc}},range:[2.5,9],
+      gridcolor:gc,linecolor:'transparent',tickcolor:'transparent',
+      tickfont:{color:tc},zeroline:false},
+    showlegend:true,
+    legend:{orientation:'h',x:0,y:1.07,bgcolor:'transparent',font:{size:10,color:dk?'#FFF':'#1D1D1F'}},
+    annotations:anns,
+    shapes:S.selectedYear?[{
+      type:'line',x0:S.selectedYear,x1:S.selectedYear,y0:2.5,y1:9,
+      xref:'x',yref:'y',line:{color:dk?'rgba(255,255,255,.2)':'rgba(0,0,0,.12)',width:1.2,dash:'dot'}
+    }]:[]
+  };
+
+  Plotly.react('chart-main',traces,layout,{
+    responsive:true, displaylogo:false, displayModeBar:true,
+    modeBarButtonsToRemove:['lasso2d','select2d','autoScale2d'],
+    toImageButtonOptions:{format:'png',width:1600,height:900,scale:2,filename:'arctic-sea-ice'}
+  });
+
+  const el=document.getElementById('chart-main');
+  el.removeAllListeners&&el.removeAllListeners('plotly_click');
+  el.on('plotly_click',d=>{
+    if(!d.points.length) return;
+    const yr=d.points[0].x;
+    S.selectedYear=yr;
+    drawMain();
+    drawCycle(yr);
+  });
 }
-function fillSlider(){
-  const mn=1950, mx=2023, rng=mx-mn;
-  const l=(S.ys-mn)/rng*100, r=100-(S.ye-mn)/rng*100;
-  const f=document.getElementById('slider-fill');
-  f.style.left=l+'%'; f.style.right=r+'%';
-  f.style.top='9.5px'; f.style.height='3px';
+
+/* ── DRAW ANNUAL CYCLE ──────────────────────────────────────────────────── */
+function drawCycle(year){
+  const dk=S.theme==='dark';
+  const bg=dk?'#1C1C1E':'#FFFFFF';
+  const gc=dk?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
+  const tc=dk?'#8E8E93':'#6E6E73';
+  const col=yearColor(year);
+  const sepVal=SEP[year-1979];
+  const hasMonthly=MONTHLY[year]!==undefined;
+
+  // update sidebar text
+  document.getElementById('det-title').textContent=year+' — September: '+sepVal.toFixed(2)+' M km²';
+  const baseline=SEP[0]; // 1979 as reference
+  const pct=((sepVal-baseline)/baseline*100).toFixed(1);
+  const vsPrev=year>1979?(sepVal-SEP[year-1980]).toFixed(2):'—';
+
+  document.getElementById('det-sub').textContent=
+    hasMonthly
+      ? 'Annual cycle vs 1980s average (baseline in grey). Summer minimum highlighted in September.'
+      : 'Annual cycle data not available for this year. Showing September value below.';
+
+  const statsHtml=`
+    <div class="stat-row"><span class="stat-lbl">September extent</span><span class="stat-val">${sepVal.toFixed(2)} M km²</span></div>
+    <div class="stat-row"><span class="stat-lbl">vs 1979 baseline</span><span class="stat-val">${pct}%</span></div>
+    <div class="stat-row"><span class="stat-lbl">vs previous year</span><span class="stat-val">${vsPrev !== '—' ? (parseFloat(vsPrev)>0?'+':'')+vsPrev+' M km²' : '—'}</span></div>
+    <div class="stat-row"><span class="stat-lbl">Decade</span><span class="stat-val">${yearDecade(year)}</span></div>
+  `;
+  document.getElementById('det-stats').innerHTML=statsHtml;
+
+  if(!hasMonthly){
+    Plotly.react('chart-cycle',[],{paper_bgcolor:bg,plot_bgcolor:bg,
+      annotations:[{text:'Monthly data not available',xref:'paper',yref:'paper',
+        x:.5,y:.5,showarrow:false,font:{size:11,color:tc}}],
+      margin:{t:4,r:4,b:4,l:4},xaxis:{visible:false},yaxis:{visible:false}
+    },{responsive:true,displayModeBar:false});
+    return;
+  }
+
+  const ym=MONTHLY[year];
+  const traces=[
+    {
+      x:MONTHS, y:BASE_80S, name:'1980s avg', type:'scatter', mode:'lines',
+      line:{color:dk?'rgba(255,255,255,.25)':'rgba(0,0,0,.2)',width:1.6,dash:'dash'},
+      fill:'tozeroy', fillcolor:dk?'rgba(255,255,255,.04)':'rgba(0,0,0,.03)',
+      hovertemplate:'1980s avg %{x}: %{y:.1f} M km²<extra></extra>'
+    },
+    {
+      x:MONTHS, y:ym, name:String(year), type:'scatter', mode:'lines+markers',
+      line:{color:col,width:2.2},
+      marker:{
+        color:MONTHS.map(m=>m==='Sep'?'#FFFFFF':col),
+        size:MONTHS.map(m=>m==='Sep'?9:5.5),
+        line:{color:col, width:MONTHS.map(m=>m==='Sep'?2:0)}
+      },
+      fill:'tozeroy', fillcolor:col+'22',
+      hovertemplate:year+' %{x}: %{y:.1f} M km²<extra></extra>'
+    }
+  ];
+
+  Plotly.react('chart-cycle',traces,{
+    paper_bgcolor:bg, plot_bgcolor:bg,
+    font:{family:'-apple-system,sans-serif',color:dk?'#FFF':'#1D1D1F',size:9.5},
+    margin:{t:8,r:8,b:36,l:42},
+    hovermode:'x',
+    hoverlabel:{bgcolor:dk?'#2C2C2E':'#FFF',font:{size:10}},
+    xaxis:{gridcolor:gc,linecolor:'transparent',tickcolor:'transparent',tickfont:{size:9,color:tc}},
+    yaxis:{title:{text:'M km²',font:{size:9,color:tc}},gridcolor:gc,
+      linecolor:'transparent',tickcolor:'transparent',tickfont:{size:9,color:tc},zeroline:false},
+    showlegend:true,
+    legend:{orientation:'h',x:0,y:1.08,bgcolor:'transparent',font:{size:9}}
+  },{responsive:true,displayModeBar:false});
 }
 
 /* ── ANIMATION ──────────────────────────────────────────────────────────── */
-function togglePlay(){ S.playing ? stopPlay() : startPlay(); }
-function startPlay(){
-  if(S.tab==='map') return;
+function togglePlay(){
+  S.playing ? stopAnim() : startAnim();
+}
+function startAnim(){
   S.playing=true;
   document.getElementById('play-btn').textContent='Pause';
   document.getElementById('play-btn').classList.add('on');
-  const hi=document.getElementById('sl-hi');
-  if(+hi.value>=2023){
-    document.getElementById('sl-lo').value=1950; S.ys=1950;
-    hi.value=1960; S.ye=1960;
-  }
+  if(S.animIdx>=YEARS.length) S.animIdx=0;
   S.timer=setInterval(()=>{
-    let v=+document.getElementById('sl-hi').value+1;
-    if(v>2023){stopPlay();return;}
-    document.getElementById('sl-hi').value=v; S.ye=v;
-    document.getElementById('yr-disp').textContent=`${S.ys} – ${v}`;
-    fillSlider(); refresh(); updateInsights();
-  },100);
+    if(S.animIdx>=YEARS.length){ stopAnim(); return; }
+    S.selectedYear=YEARS[S.animIdx++];
+    drawMain();
+    drawCycle(S.selectedYear);
+  },160);
 }
-function stopPlay(){
+function stopAnim(){
   S.playing=false; clearInterval(S.timer);
   document.getElementById('play-btn').textContent='Play';
   document.getElementById('play-btn').classList.remove('on');
 }
-function resetAll(){
-  stopPlay();
-  document.getElementById('sl-lo').value=1950;
-  document.getElementById('sl-hi').value=2023;
-  S.ys=1950; S.ye=2023;
-  document.getElementById('yr-disp').textContent='1950 – 2023';
-  fillSlider(); refresh(); updateInsights();
-}
-
-/* ── TABS ───────────────────────────────────────────────────────────────── */
-function switchTab(t){
-  stopPlay();
-  S.tab=t;
-  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id==='panel-'+t));
-  document.getElementById('ctrl-bar').style.display=t==='map'?'none':'flex';
-  history.replaceState(null,'',`#${t}`);
-  refresh();
-}
-function refresh(){
-  switch(S.tab){
-    case 'overview':    drawOverview();  break;
-    case 'temperature': drawTemp();      break;
-    case 'energy':      drawEnergy();    break;
-    case 'map':         drawMap();       break;
-    case 'compare':     drawCompare();   break;
-  }
-}
-
-/* ── INSIGHTS ───────────────────────────────────────────────────────────── */
-function updateInsights(){
-  const ts=YT.filter(y=>y>=S.ys&&y<=S.ye).map(y=>TA[y-1950]);
-  if(ts.length){
-    const avg=ts.reduce((a,b)=>a+b,0)/ts.length;
-    document.getElementById('ins-avg').textContent=(avg>=0?'+':'')+avg.toFixed(2)+'°C';
-  }
-  const cs=YC.filter(y=>y>=S.ys&&y<=S.ye);
-  if(cs.length>=2){
-    const rise=CO2[cs[cs.length-1]-1960]-CO2[cs[0]-1960];
-    document.getElementById('ins-co2rise').textContent=(rise>=0?'+':'')+rise.toFixed(0)+' ppm';
-  }
-  let hotY=S.ys, hotV=-99;
-  YT.filter(y=>y>=S.ys&&y<=S.ye).forEach(y=>{const v=TA[y-1950];if(v>hotV){hotV=v;hotY=y;}});
-  document.getElementById('ins-hot').textContent=hotY;
-}
-
-/* ── ROLLING MEAN ───────────────────────────────────────────────────────── */
-function rolling(vals,w){
-  return vals.map((_,i)=>{
-    const lo=Math.max(0,i-Math.floor(w/2)), hi=Math.min(vals.length-1,i+Math.floor(w/2));
-    const s=vals.slice(lo,hi+1);
-    return s.reduce((a,b)=>a+b,0)/s.length;
-  });
-}
-
-/* ── COLOUR HELPERS ─────────────────────────────────────────────────────── */
-function anomColor(v){
-  if(v>=1.0) return '#8B0000';
-  if(v>=0.7) return '#C0392B';
-  if(v>=0.4) return '#E35A00';
-  if(v>=0.1) return '#FF9500';
-  if(v>=0)   return '#BDD7E7';
-  if(v>=-0.1)return '#6BAED6';
-  return '#2171B5';
-}
-
-/* ── OVERVIEW ───────────────────────────────────────────────────────────── */
-function drawOverview(){
-  const dk=S.theme==='dark';
-  const bg='transparent';
-  const ax={showgrid:false,zeroline:false,
-    tickcolor:'transparent',tickfont:{color:dk?'#8E8E93':'#6E6E73',size:8}};
-  const margins={t:6,r:8,b:28,l:36};
-
-  const yrs=YT.filter(y=>y>=S.ys&&y<=S.ye);
-  const tv=yrs.map(y=>TA[y-1950]);
-  Plotly.react('mini-temp',[{
-    x:yrs,y:tv,type:'bar',marker:{color:tv.map(anomColor)},
-    hovertemplate:'%{x}: %{y:+.2f}°C<extra></extra>'
-  }],{
-    paper_bgcolor:bg,plot_bgcolor:bg,margin:margins,
-    xaxis:ax,yaxis:{...ax,tickformat:'+.1f'},
-    showlegend:false,hovermode:'closest',font:{size:9,color:dk?'#8E8E93':'#6E6E73'}
-  },CFG0);
-
-  const eyrs=YE.filter(y=>y>=Math.max(S.ys,2000)&&y<=Math.min(S.ye,2022));
-  const eSrc=['Coal','Wind','Solar'], eCols=['#3A3A3C','#30D158','#FF9F0A'];
-  Plotly.react('mini-energy',eSrc.map((s,i)=>({
-    x:eyrs,y:eyrs.map(y=>EL[s][y-2000]/1000),
-    name:s,type:'scatter',mode:'none',
-    fill:i===0?'tozeroy':'tonexty',
-    fillcolor:eCols[i]+(dk?'CC':'AA'),line:{width:0},
-    hovertemplate:s+': %{y:.1f} PWh<extra></extra>'
-  })),{
-    paper_bgcolor:bg,plot_bgcolor:bg,margin:margins,
-    xaxis:ax,yaxis:ax,showlegend:false,hovermode:'x',
-    font:{size:9,color:dk?'#8E8E93':'#6E6E73'}
-  },CFG0);
-
-  Plotly.react('mini-map',[{
-    type:'choropleth',locations:MAP.iso3,z:MAP.co2,text:MAP.name,
-    colorscale:[[0,'#FFF7BC'],[.15,'#FEC44F'],[.35,'#FE9929'],[.6,'#D95F0E'],[1,'#7F0000']],
-    zmin:0,zmax:25,showscale:false,
-    hovertemplate:'%{text}: %{z:.1f} t<extra></extra>',
-    marker:{line:{width:0.4,color:dk?'rgba(255,255,255,.1)':'rgba(255,255,255,.9)'}}
-  }],{
-    paper_bgcolor:bg,margin:{t:0,r:0,b:0,l:0},
-    geo:{showframe:false,showcoastlines:true,
-      coastlinecolor:dk?'rgba(255,255,255,.1)':'rgba(0,0,0,.15)',
-      bgcolor:bg,landcolor:dk?'#2C2C2E':'#F0F0F0',
-      showland:true,showocean:true,
-      oceancolor:dk?'#000000':'#E8F4FB',
-      projection:{type:'natural earth'}},
-    font:{size:9}
-  },CFG0);
-
-  const ctrs=Object.keys(RD);
-  const cols=ctrs.map(c=>{const g=RD[c].b-RD[c].a;
-    return g>20?'#0071E3':g>10?'#5AC8FA':g>0?'#BDE0F7':'#FF3B30';});
-  Plotly.react('mini-compare',ctrs.map((c,i)=>({
-    x:[2005,2022],y:[RD[c].a,RD[c].b],mode:'lines+markers',
-    line:{color:cols[i],width:1.4},marker:{color:cols[i],size:3.5},
-    name:c,hovertemplate:c+'<br>2005: '+RD[c].a+'%<br>2022: '+RD[c].b+'%<extra></extra>'
-  })),{
-    paper_bgcolor:bg,plot_bgcolor:bg,
-    margin:{t:6,r:10,b:28,l:10},
-    xaxis:{...ax,tickvals:[2005,2022],ticktext:['2005','2022']},
-    yaxis:{...ax,ticksuffix:'%'},
-    showlegend:false,hovermode:'closest',
-    font:{size:9,color:dk?'#8E8E93':'#6E6E73'}
-  },CFG0);
-}
-
-/* ── TEMPERATURE ────────────────────────────────────────────────────────── */
-function syncPills(){
-  ['co2','roll','paris'].forEach(id=>{
-    const chk=document.getElementById('chk-'+id);
-    const pil=document.getElementById('pill-'+id);
-    if(chk&&pil) pil.classList.toggle('on',chk.checked);
-  });
-}
-function drawTemp(){
-  syncPills();
-  const dk=S.theme==='dark';
-  const showCO2  =document.getElementById('chk-co2')?.checked??true;
-  const showRoll =document.getElementById('chk-roll')?.checked??true;
-  const showParis=document.getElementById('chk-paris')?.checked??true;
-  const yrs=YT.filter(y=>y>=S.ys&&y<=S.ye);
-  const tv=yrs.map(y=>TA[y-1950]);
-  const traces=[];
-
-  traces.push({
-    x:yrs,y:tv,type:'bar',name:'Annual anomaly',
-    marker:{color:tv.map(anomColor)},yaxis:'y',
-    hovertemplate:'<b>%{x}</b>: %{y:+.2f}°C<extra>Temp anomaly</extra>'
-  });
-  if(showRoll){
-    const rm=rolling(tv,10);
-    traces.push({
-      x:yrs,y:rm,type:'scatter',mode:'lines',name:'10-yr mean',
-      line:{color:dk?'rgba(255,255,255,.8)':'rgba(0,0,0,.75)',width:2,shape:'spline'},
-      yaxis:'y',hovertemplate:'%{x}: %{y:+.2f}°C (10-yr mean)<extra></extra>'
-    });
-  }
-  if(showCO2){
-    const cy=YC.filter(y=>y>=S.ys&&y<=S.ye);
-    traces.push({
-      x:cy,y:cy.map(y=>CO2[y-1960]),type:'scatter',mode:'lines',name:'CO₂ (ppm)',
-      line:{color:'#B8860B',width:2},yaxis:'y2',
-      hovertemplate:'%{x}: %{y:.1f} ppm CO₂<extra></extra>'
-    });
-  }
-
-  const shapes=[],anns=[];
-  if(showParis&&2015>=S.ys&&2015<=S.ye){
-    shapes.push({type:'line',x0:2015,x1:2015,y0:-2,y1:2,
-      xref:'x',yref:'y',line:{color:'#FF3B30',width:1.2,dash:'dot'}});
-    anns.push({x:2015.3,y:Math.max(...tv)*.9,text:'Paris<br>Agreement',
-      xref:'x',yref:'y',showarrow:false,
-      font:{size:9,color:'#FF3B30'},align:'left'});
-  }
-
-  Plotly.react('chart-temp',traces,base({
-    xaxis:{title:{text:'Year',font:{size:10}},range:[S.ys-.5,S.ye+.5]},
-    yaxis:{title:{text:'Anomaly (°C)',font:{size:10}},tickformat:'+.1f',
-      zeroline:true,zerolinecolor:dk?'rgba(255,255,255,.12)':'rgba(0,0,0,.12)'},
-    yaxis2:showCO2?{title:{text:'CO₂ (ppm)',font:{size:10,color:'#B8860B'}},
-      overlaying:'y',side:'right',gridcolor:'transparent',
-      tickcolor:'transparent',tickfont:{color:'#B8860B'},color:'#B8860B',
-      range:[280,470]}:{},
-    showlegend:true,
-    legend:{orientation:'h',x:0,y:1.08,bgcolor:'transparent',font:{size:10}},
-    shapes,annotations:anns
-  }),CFG);
-}
-
-/* ── ENERGY ─────────────────────────────────────────────────────────────── */
-function initSrcPills(){
-  const c=document.getElementById('src-pills');
-  Object.keys(EL).forEach(s=>{
-    const lbl=document.createElement('label');
-    lbl.className='pill on'; lbl.id='pill-src-'+s;
-    lbl.innerHTML=`<input type="checkbox" checked><span class="dot" style="background:${EC[s]}"></span>${s}`;
-    lbl.querySelector('input').addEventListener('change',e=>{
-      lbl.classList.toggle('on',e.target.checked);
-      e.target.checked ? S.src.add(s) : S.src.delete(s);
-      drawEnergy();
-    });
-    c.appendChild(lbl);
-  });
-}
-function drawEnergy(){
-  const dk=S.theme==='dark';
-  const ys=Math.max(S.ys,2000), ye=Math.min(S.ye,2022);
-  const yrs=YE.filter(y=>y>=ys&&y<=ye);
-  const mode=document.getElementById('e-mode')?.value??'abs';
-  const srcs=Object.keys(EL).filter(s=>S.src.has(s));
-  const traces=[];
-
-  if(mode==='pct'){
-    const tots=yrs.map(y=>{const i=y-2000;return srcs.reduce((sum,s)=>sum+EL[s][i],0);});
-    srcs.forEach(s=>{
-      const vs=yrs.map((y,i)=>tots[i]>0?EL[s][y-2000]/tots[i]*100:0);
-      traces.push({x:yrs,y:vs,name:s,type:'scatter',mode:'none',stackgroup:'one',
-        fillcolor:EC[s]+(dk?'D0':'A0'),line:{width:0},
-        hovertemplate:s+': %{y:.1f}%<extra></extra>'});
-    });
-  } else {
-    const stk=new Array(yrs.length).fill(0);
-    srcs.forEach(s=>{
-      const vs=yrs.map(y=>EL[s][y-2000]/1000);
-      traces.push({
-        x:yrs,y:vs.map((v,i)=>v+stk[i]),name:s,
-        type:'scatter',mode:'lines',fill:traces.length===0?'tozeroy':'tonexty',
-        fillcolor:EC[s]+(dk?'BB':'88'),line:{width:.5,color:EC[s]},
-        hovertemplate:s+': %{y:.1f} PWh<extra></extra>'
-      });
-      vs.forEach((v,i)=>stk[i]+=v);
-    });
-  }
-
-  Plotly.react('chart-energy',traces,base({
-    xaxis:{title:{text:'Year',font:{size:10}},range:[ys-.5,ye+.5]},
-    yaxis:{title:{text:mode==='pct'?'Share (%)':'Generation (PWh)',font:{size:10}}},
-    showlegend:true,
-    legend:{orientation:'h',x:0,y:1.08,bgcolor:'transparent',font:{size:10}}
-  }),CFG);
-}
-
-/* ── MAP ─────────────────────────────────────────────────────────────────── */
-function drawMap(){
-  const dk=S.theme==='dark';
-  Plotly.react('chart-map',[{
-    type:'choropleth',locations:MAP.iso3,z:MAP.co2,
-    text:MAP.name.map((n,i)=>`<b>${n}</b><br>${MAP.co2[i].toFixed(1)} t CO₂ / person`),
-    colorscale:[[0,'#FFF7BC'],[.12,'#FEC44F'],[.28,'#FE9929'],[.55,'#D95F0E'],[1,'#7F0000']],
-    zmin:0,zmax:25,showscale:true,
-    colorbar:{title:{text:'t CO₂<br>/ person',font:{size:10,color:dk?'#8E8E93':'#6E6E73'}},
-      len:.65,tickvals:[0,5,10,15,20,25],
-      tickfont:{size:9,color:dk?'#8E8E93':'#6E6E73'},
-      bgcolor:'transparent',borderwidth:0},
-    hovertemplate:'%{text}<extra></extra>',
-    marker:{line:{color:dk?'rgba(255,255,255,.1)':'rgba(255,255,255,.9)',width:.5}}
-  }],{
-    ...base({margin:{t:10,r:0,b:0,l:0}}),
-    geo:{showframe:false,showcoastlines:true,
-      coastlinecolor:dk?'rgba(255,255,255,.1)':'rgba(0,0,0,.15)',
-      projection:{type:'natural earth'},bgcolor:'transparent',
-      landcolor:dk?'#2C2C2E':'#F0F0F0',showland:true,
-      showocean:true,oceancolor:dk?'#000000':'#EAF4FB',showlakes:false}
-  },{...CFG,displayModeBar:false});
-
-  const el=document.getElementById('chart-map');
-  el.removeAllListeners&&el.removeAllListeners('plotly_click');
-  el.on('plotly_click',d=>{
-    if(!d.points.length) return;
-    const i=d.points[0].pointIndex;
-    showDetail(MAP.name[i],MAP.co2[i]);
-  });
-}
-function showDetail(name,val){
-  const dk=S.theme==='dark';
-  document.getElementById('d-name').textContent=name;
-  document.getElementById('d-val').textContent=val.toFixed(1)+' t';
-  document.getElementById('d-avg').textContent=(val/4.7).toFixed(1)+'×';
-  document.getElementById('d-qt').textContent=(val/31*100).toFixed(0)+'% of Qatar';
-  document.getElementById('d-eth').textContent=(val/.1).toFixed(0)+'×';
-  Plotly.react('d-bar',[{
-    x:['Ethiopia','Brazil','World avg',name,'Qatar'],
-    y:[.1,2.2,4.7,val,31],type:'bar',
-    marker:{color:['#34C759','#30D158','#0071E3',
-      val>14?'#FF3B30':val>7?'#FF9F0A':'#0071E3','#8B0000']},
-    hovertemplate:'%{x}: %{y:.1f} t<extra></extra>',
-    text:['.1','2.2','4.7',val.toFixed(1),'31'],
-    textposition:'outside',textfont:{size:8.5,color:dk?'#8E8E93':'#6E6E73'}
-  }],{
-    paper_bgcolor:'transparent',plot_bgcolor:'transparent',
-    margin:{t:4,r:4,b:48,l:24},
-    xaxis:{showgrid:false,tickangle:-32,
-      tickfont:{size:8,color:dk?'#8E8E93':'#6E6E73'},
-      tickcolor:'transparent',linecolor:'transparent'},
-    yaxis:{showgrid:true,gridcolor:dk?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)',
-      tickfont:{size:8.5,color:dk?'#8E8E93':'#6E6E73'},
-      tickcolor:'transparent',linecolor:'transparent'},
-    font:{size:9,color:dk?'#FFFFFF':'#1D1D1F'},
-    showlegend:false
+function resetAnim(){
+  stopAnim(); S.animIdx=0; S.selectedYear=null;
+  document.getElementById('det-title').textContent='Select a year';
+  document.getElementById('det-sub').textContent='Click any point on the chart to see that year\'s full seasonal ice cycle compared to the 1980s average.';
+  document.getElementById('det-stats').innerHTML='';
+  Plotly.react('chart-cycle',[],{paper_bgcolor:S.theme==='dark'?'#1C1C1E':'#FFF',
+    plot_bgcolor:S.theme==='dark'?'#1C1C1E':'#FFF',
+    margin:{t:4,r:4,b:4,l:4},xaxis:{visible:false},yaxis:{visible:false}
   },{responsive:true,displayModeBar:false});
-}
-
-/* ── COMPARE ─────────────────────────────────────────────────────────────── */
-function initCtryBtns(){
-  const c=document.getElementById('ctry-btns');
-  Object.keys(RD).forEach(ct=>{
-    const b=document.createElement('button');
-    b.className='ctry-btn on'; b.textContent=ct; b.dataset.ctry=ct;
-    b.onclick=()=>{
-      if(S.ctry.has(ct)){S.ctry.delete(ct);b.classList.remove('on');}
-      else{S.ctry.add(ct);b.classList.add('on');}
-      drawCompare();
-    };
-    c.appendChild(b);
-  });
-}
-function selAll(){
-  S.ctry=new Set(Object.keys(RD));
-  document.querySelectorAll('.ctry-btn').forEach(b=>b.classList.add('on'));
-  drawCompare();
-}
-function selNone(){
-  S.ctry.clear();
-  document.querySelectorAll('.ctry-btn').forEach(b=>b.classList.remove('on'));
-  drawCompare();
-}
-function selGainers(){
-  S.ctry.clear();
-  document.querySelectorAll('.ctry-btn').forEach(b=>{
-    const c=b.dataset.ctry, gain=RD[c].b-RD[c].a;
-    if(gain>20){S.ctry.add(c);b.classList.add('on');}
-    else b.classList.remove('on');
-  });
-  drawCompare();
-}
-function drawCompare(){
-  const dk=S.theme==='dark';
-  const traces=[];
-  Array.from(S.ctry).forEach(c=>{
-    const d=RD[c], gain=d.b-d.a;
-    const col=gain>30?'#0A4F9E':gain>15?'#0071E3':gain>5?'#5AC8FA':'#FF3B30';
-    traces.push({
-      x:[2005,2022],y:[d.a,d.b],mode:'lines+markers+text',name:c,
-      line:{color:col,width:1.8},marker:{color:col,size:5.5},
-      text:['',d.b.toFixed(0)+'%'],textposition:'middle right',
-      textfont:{size:9.5,color:col},
-      hovertemplate:`<b>${c}</b><br>2005: ${d.a}%<br>2022: ${d.b}%<br>Change: ${gain>0?'+':''}${gain.toFixed(1)} pp<extra></extra>`
-    });
-    traces.push({
-      x:[2005],y:[d.a],mode:'text',showlegend:false,
-      text:[d.a.toFixed(0)+'% '+c],textposition:'middle left',
-      textfont:{size:8.5,color:col},hoverinfo:'skip'
-    });
-  });
-
-  Plotly.react('chart-compare',traces,base({
-    xaxis:{tickvals:[2005,2022],ticktext:['2005','2022'],showgrid:false,
-      zeroline:false,range:[1988,2035],
-      tickfont:{size:13,color:dk?'#FFFFFF':'#1D1D1F',bold:true},
-      linecolor:'transparent',tickcolor:'transparent'},
-    yaxis:{ticksuffix:'%',showgrid:false,zeroline:false,range:[-5,115],
-      tickfont:{color:dk?'#8E8E93':'#6E6E73'},
-      linecolor:'transparent',tickcolor:'transparent'},
-    showlegend:false,margin:{t:30,r:60,b:44,l:60}
-  }),CFG);
-}
-
-/* ── DOWNLOAD ───────────────────────────────────────────────────────────── */
-function dlChart(){
-  const ids={overview:'mini-temp',temperature:'chart-temp',
-    energy:'chart-energy',map:'chart-map',compare:'chart-compare'};
-  const id=ids[S.tab];
-  if(id&&document.getElementById(id)){
-    Plotly.downloadImage(id,{
-      format:'png',width:1600,height:900,scale:2,
-      filename:'climate-'+S.tab
-    });
-  }
+  drawMain();
 }
 
 /* ── KEYBOARD ───────────────────────────────────────────────────────────── */
-const TABS=['overview','temperature','energy','map','compare'];
 document.addEventListener('keydown',e=>{
-  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return;
-  const i=TABS.indexOf(S.tab);
-  if(e.key==='ArrowRight'&&i<TABS.length-1) switchTab(TABS[i+1]);
-  else if(e.key==='ArrowLeft'&&i>0) switchTab(TABS[i-1]);
-  else if(e.key===' '){e.preventDefault();togglePlay();}
-});
-
-/* ── TAB DELEGATION ─────────────────────────────────────────────────────── */
-document.getElementById('tabbar').addEventListener('click',e=>{
-  const b=e.target.closest('[data-tab]');
-  if(b) switchTab(b.dataset.tab);
-});
-
-/* ── PILL SYNC ──────────────────────────────────────────────────────────── */
-['co2','roll','paris'].forEach(id=>{
-  const chk=document.getElementById('chk-'+id);
-  if(chk) chk.addEventListener('change',()=>{syncPills();drawTemp();});
+  if(e.key===' '){e.preventDefault();togglePlay();}
+  if(e.key==='ArrowRight'){
+    stopAnim();
+    const i=S.selectedYear?YEARS.indexOf(S.selectedYear):-1;
+    if(i<YEARS.length-1){S.selectedYear=YEARS[i+1];drawMain();drawCycle(S.selectedYear);}
+  }
+  if(e.key==='ArrowLeft'){
+    stopAnim();
+    const i=S.selectedYear?YEARS.indexOf(S.selectedYear):0;
+    if(i>0){S.selectedYear=YEARS[i-1];drawMain();drawCycle(S.selectedYear);}
+  }
 });
 
 /* ── INIT ───────────────────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded',()=>{
-  initSliders();
-  initSrcPills();
-  initCtryBtns();
-  updateInsights();
-  const h=location.hash.replace('#','');
-  if(TABS.includes(h)) switchTab(h);
-  else drawOverview();
+  initDecButtons();
+  drawMain();
+  // Show 2023 by default
+  S.selectedYear=2023;
+  drawMain();
+  drawCycle(2023);
 });
 </script>
 </body>
