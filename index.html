@@ -97,12 +97,6 @@ main { flex:1; padding:16px 28px 0; }
   font-variant-numeric:tabular-nums; white-space:nowrap;
 }
 
-/* Anim display */
-.anim-yr {
-  font-size:.78rem; font-weight:600; font-variant-numeric:tabular-nums;
-  color:var(--acc); min-width:32px;
-}
-
 /* Footer */
 footer { padding:11px 28px; border-top:1px solid var(--border); margin-top:0; }
 footer p { font-size:.63rem; color:var(--text2); line-height:1.7; }
@@ -139,7 +133,6 @@ footer p { font-size:.63rem; color:var(--text2); line-height:1.7; }
   <!-- Play controls -->
   <button class="btn" id="play-btn" onclick="togglePlay()">Play</button>
   <button class="btn sm" onclick="resetAll()">Reset</button>
-  <span class="anim-yr" id="anim-yr"></span>
 
   <div class="ctrl-sep"></div>
 
@@ -226,17 +219,19 @@ function linReg(xs,ys){
 
 /* ── LAYOUT BASE ──────────────────────────────────────────────────────── */
 function baseLayout(dk){
-  const bg=dk?'#1C1C1E':'#fff', gc=dk?'rgba(255,255,255,.05)':'rgba(0,0,0,.05)', tc=dk?'#8E8E93':'#6E6E73';
+  const bg=dk?'#1C1C1E':'#fff', gc=dk?'rgba(255,255,255,.05)':'rgba(0,0,0,.05)';
+  const tc=dk?'#8E8E93':'#6E6E73';   // axis titles / secondary
+  const lc=dk?'#FFFFFF':'#1D1D1F';   // axis tick labels
   return {
     paper_bgcolor:bg, plot_bgcolor:bg,
-    font:{family:'-apple-system,"SF Pro Text",sans-serif',color:dk?'#fff':'#1D1D1F',size:11},
+    font:{family:'-apple-system,"SF Pro Text",sans-serif',color:lc,size:11},
     margin:{t:20,r:20,b:54,l:58},
     hovermode:'x unified',
     hoverlabel:{bgcolor:dk?'#2C2C2E':'#fff',bordercolor:dk?'rgba(255,255,255,.12)':'rgba(0,0,0,.1)',font:{size:11.5}},
-    xaxis:{gridcolor:gc,linecolor:'transparent',tickcolor:'transparent',tickfont:{color:tc}},
+    xaxis:{gridcolor:gc,linecolor:'transparent',tickcolor:'transparent',tickfont:{color:lc}},
     yaxis:{title:{text:'Extent (million km²)',font:{size:10,color:tc}},
       gridcolor:gc,linecolor:'transparent',tickcolor:'transparent',
-      zeroline:false,tickfont:{color:tc},range:[2.2,9.0]},
+      zeroline:false,tickfont:{color:lc},range:[2.2,9.0]},
     showlegend:false, bargap:0.18
   };
 }
@@ -347,10 +342,6 @@ function draw(){
 
 /* ── CONTROLS SYNC ────────────────────────────────────────────────────── */
 function updateCtrl(){
-  const fp=filtPairs();
-  // anim year display
-  const visible=fp.slice(0,S.idx);
-  document.getElementById('anim-yr').textContent=visible.length?visible[visible.length-1].y:'';
   // button states
   ['trend','decades','sort'].forEach(k=>{
     document.getElementById('btn-'+k).classList.toggle('on',S['show'+k.charAt(0).toUpperCase()+k.slice(1)]);
