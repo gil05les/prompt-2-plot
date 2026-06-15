@@ -7,96 +7,121 @@
 <script src="https://cdn.plot.ly/plotly-2.32.0.min.js" charset="utf-8"></script>
 <style>
 :root {
-  --bg:    #F5F5F7;
-  --card:  #FFFFFF;
-  --text:  #1D1D1F;
-  --text2: #6E6E73;
-  --border: rgba(0,0,0,.08);
-  --border2: rgba(0,0,0,.13);
-  --hover: #F0F0F2;
-  --r: 12px;
+  --bg:    #F5F5F7; --card: #FFFFFF; --text: #1D1D1F; --text2: #6E6E73;
+  --acc:   #0071E3; --border: rgba(0,0,0,.08); --border2: rgba(0,0,0,.13);
+  --hover: #F0F0F2; --r: 10px;
   --shadow: 0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
 }
 [data-theme="dark"] {
-  --bg:    #000;
-  --card:  #1C1C1E;
-  --text:  #FFF;
-  --text2: #8E8E93;
-  --border: rgba(255,255,255,.08);
-  --border2: rgba(255,255,255,.14);
+  --bg:    #000; --card: #1C1C1E; --text: #FFF; --text2: #8E8E93;
+  --acc:   #0A84FF; --border: rgba(255,255,255,.08); --border2: rgba(255,255,255,.14);
   --hover: #2C2C2E;
 }
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
-  background: var(--bg); color: var(--text);
-  min-height: 100vh; display: flex; flex-direction: column;
-  -webkit-font-smoothing: antialiased;
-  transition: background .2s, color .2s;
+  font-family: -apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;
+  background:var(--bg); color:var(--text); min-height:100vh;
+  display:flex; flex-direction:column; -webkit-font-smoothing:antialiased;
+  transition:background .2s,color .2s;
 }
 
+/* Header */
 header {
-  background: var(--card); border-bottom: 1px solid var(--border);
-  padding: 16px 28px;
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  background:var(--card); border-bottom:1px solid var(--border);
+  padding:14px 28px; display:flex; align-items:flex-start;
+  justify-content:space-between; gap:16px;
 }
-header h1 { font-size: 1.05rem; font-weight: 600; letter-spacing: -.018em; }
-header p  { font-size: .71rem; color: var(--text2); margin-top: 3px; }
-.hd-acts  { display: flex; gap: 8px; align-items: center; flex-shrink: 0; margin-top: 2px; }
+header h1 { font-size:1.05rem; font-weight:600; letter-spacing:-.018em; }
+header p  { font-size:.71rem; color:var(--text2); margin-top:3px; }
+.hd-acts  { display:flex; gap:8px; align-items:center; flex-shrink:0; margin-top:2px; }
 
-.btn {
-  background: var(--bg); border: 1px solid var(--border2);
-  border-radius: var(--r); padding: 5px 14px;
-  cursor: pointer; font-size: .76rem; color: var(--text);
-  font-weight: 500; transition: all .12s; white-space: nowrap;
-}
-.btn:hover { background: var(--hover); }
-.btn.on    { background: #0071E3; color:#fff; border-color:#0071E3; }
-[data-theme="dark"] .btn.on { background:#0A84FF; border-color:#0A84FF; }
-
-main {
-  flex: 1; padding: 20px 28px;
-  display: flex; flex-direction: column;
-}
+/* Chart */
+main { flex:1; padding:16px 28px 0; }
 .chart-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--r); padding: 20px;
-  box-shadow: var(--shadow); flex: 1;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--r); padding:18px; box-shadow:var(--shadow);
 }
-#chart { height: clamp(360px, 58vh, 620px); }
+#chart { height: clamp(340px,55vh,580px); }
 
-.controls {
-  display: flex; align-items: center; gap: 12px; margin-top: 16px; flex-wrap: wrap;
+/* Controls */
+.ctrl-bar {
+  background:var(--card); border-top:1px solid var(--border);
+  padding:12px 28px; display:flex; align-items:center; gap:20px; flex-wrap:wrap;
 }
-.year-display {
-  font-size: 1.45rem; font-weight: 700; letter-spacing: -.04em;
-  font-variant-numeric: tabular-nums; color: var(--text);
-  min-width: 52px;
+.ctrl-sep { width:1px; height:28px; background:var(--border2); flex-shrink:0; }
+.ctrl-label {
+  font-size:.65rem; font-weight:600; color:var(--text2);
+  text-transform:uppercase; letter-spacing:.05em; white-space:nowrap;
 }
-.ext-display {
-  font-size: .8rem; color: var(--text2); margin-top: 1px;
-  font-variant-numeric: tabular-nums;
+
+/* Buttons */
+.btn {
+  background:var(--bg); border:1px solid var(--border2); border-radius:var(--r);
+  padding:5px 13px; cursor:pointer; font-size:.76rem; color:var(--text);
+  font-weight:500; transition:all .12s; white-space:nowrap;
 }
-.spacer { flex: 1; }
+.btn:hover  { background:var(--hover); }
+.btn.on     { background:var(--acc); color:#fff; border-color:var(--acc); }
+.btn.sm     { padding:4px 10px; font-size:.71rem; }
+.btn:disabled { opacity:.35; cursor:default; }
+
+/* Dual range slider */
+.dslider { position:relative; width:180px; height:22px; flex-shrink:0; }
+.dslider input[type=range] {
+  position:absolute; left:0; right:0; width:100%;
+  pointer-events:none; -webkit-appearance:none; appearance:none;
+  background:transparent; height:22px;
+}
+.dslider input[type=range]::-webkit-slider-runnable-track {
+  height:3px; background:var(--border2); border-radius:2px;
+}
+.dslider input[type=range]::-moz-range-track {
+  height:3px; background:var(--border2); border-radius:2px;
+}
+.dslider input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; pointer-events:all;
+  width:15px; height:15px; border-radius:50%;
+  background:var(--acc); border:2px solid var(--card);
+  box-shadow:0 1px 3px rgba(0,0,0,.25); cursor:grab; margin-top:-6px;
+}
+.dslider input[type=range]::-moz-range-thumb {
+  pointer-events:all; border:none; width:13px; height:13px;
+  border-radius:50%; background:var(--acc); cursor:grab;
+}
+#slider-fill {
+  position:absolute; top:9.5px; height:3px;
+  background:var(--acc); border-radius:2px; pointer-events:none; z-index:1;
+}
+.yr-disp {
+  font-size:.78rem; font-weight:600; color:var(--text);
+  font-variant-numeric:tabular-nums; white-space:nowrap;
+}
+
+/* Progress */
 .progress-wrap {
-  flex: 1; min-width: 120px; height: 3px; background: var(--border2);
-  border-radius: 2px; position: relative; cursor: pointer;
+  width:100px; height:3px; background:var(--border2);
+  border-radius:2px; cursor:pointer; flex-shrink:0;
 }
-.progress-fill {
-  height: 100%; border-radius: 2px;
-  background: #0071E3; width: 0%;
-  transition: width .12s linear;
-  pointer-events: none;
-}
-[data-theme="dark"] .progress-fill { background: #0A84FF; }
+.progress-fill { height:100%; border-radius:2px; background:var(--acc); width:0%; transition:width .1s linear; pointer-events:none; }
 
-footer {
-  padding: 12px 28px; border-top: 1px solid var(--border);
+/* Anim display */
+.anim-yr {
+  font-size:.78rem; font-weight:600; font-variant-numeric:tabular-nums;
+  color:var(--acc); min-width:32px;
 }
-footer p { font-size: .63rem; color: var(--text2); line-height: 1.7; }
+
+/* Footer */
+footer { padding:11px 28px; border-top:1px solid var(--border); margin-top:0; }
+footer p { font-size:.63rem; color:var(--text2); line-height:1.7; }
 
 ::-webkit-scrollbar { width:4px; height:4px; }
 ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+
+@media(max-width:700px) {
+  .ctrl-sep { display:none; }
+  .dslider { width:120px; }
+  main, footer, header, .ctrl-bar { padding-left:14px; padding-right:14px; }
+}
 </style>
 </head>
 <body>
@@ -104,37 +129,56 @@ footer p { font-size: .63rem; color: var(--text2); line-height: 1.7; }
 <header>
   <div>
     <h1>Arctic Sea Ice Decline</h1>
-    <p>September minimum extent &middot; Northern Hemisphere &middot; 1979 – 2024</p>
+    <p>September minimum extent &middot; Northern Hemisphere &middot; 1979 – 2024 &middot; Click a bar for details</p>
   </div>
   <div class="hd-acts">
-    <button class="btn" id="theme-btn" onclick="toggleTheme()">Dark</button>
+    <button class="btn sm" id="theme-btn" onclick="toggleTheme()">Dark</button>
   </div>
 </header>
 
 <main>
   <div class="chart-card">
     <div id="chart"></div>
-    <div class="controls">
-      <button class="btn" id="play-btn" onclick="togglePlay()">Play</button>
-      <button class="btn" onclick="resetChart()">Reset</button>
-      <div>
-        <div class="year-display" id="yr">—</div>
-        <div class="ext-display" id="ext"></div>
-      </div>
-      <div class="progress-wrap" id="progress-wrap" onclick="seekTo(event)">
-        <div class="progress-fill" id="progress-fill"></div>
-      </div>
-    </div>
   </div>
 </main>
 
+<div class="ctrl-bar">
+  <!-- Play controls -->
+  <button class="btn" id="play-btn" onclick="togglePlay()">Play</button>
+  <button class="btn sm" onclick="resetAll()">Reset</button>
+  <div class="progress-wrap" onclick="seekProgress(event)">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+  <span class="anim-yr" id="anim-yr"></span>
+
+  <div class="ctrl-sep"></div>
+
+  <!-- Year filter -->
+  <span class="ctrl-label">Filter</span>
+  <div class="dslider" id="dslider">
+    <div id="slider-fill"></div>
+    <input type="range" id="sl-lo" min="1979" max="2023" value="1979" step="1">
+    <input type="range" id="sl-hi" min="1980" max="2024" value="2024" step="1">
+  </div>
+  <span class="yr-disp" id="yr-disp">1979 – 2024</span>
+
+  <div class="ctrl-sep"></div>
+
+  <!-- View toggles -->
+  <span class="ctrl-label">View</span>
+  <button class="btn sm" id="btn-trend"   onclick="toggle('showTrend')"   title="Overlay a linear trend line (analytical augmentation)">Trend line</button>
+  <button class="btn sm" id="btn-decades" onclick="toggle('showDecades')" title="Aggregate into decade averages">Decade avg</button>
+  <button class="btn sm" id="btn-sort"    onclick="toggle('showSort')"    title="Re-sort bars by extent value">Sort by value</button>
+</div>
+
 <footer>
-  <p>Source: National Snow and Ice Data Center (NSIDC), Sea Ice Index v3.0 &middot; NASA Earth Science Division</p>
+  <p>Source: National Snow and Ice Data Center (NSIDC), Sea Ice Index v3.0 &middot; NASA Earth Science Division &middot; nsidc.org/data/seaice_index</p>
 </footer>
 
 <script>
 'use strict';
 
+/* ── DATA ─────────────────────────────────────────────────────────────── */
 const YEARS = Array.from({length:46},(_,i)=>1979+i);
 const SEP = [
   7.05,7.67,7.06,7.36,7.33,6.84,6.98,7.53,7.54,7.43,
@@ -143,151 +187,279 @@ const SEP = [
   5.13,4.93,4.34,3.41,5.10,5.03,4.41,4.14,4.64,4.59,
   4.15,3.74,4.72,4.67,4.23,4.28
 ];
-
-// Color by value: blue (high ice) → red (low ice)
-const STOPS = [
-  {t:0,    r:146, g:39,  b:30 },   // deep red
-  {t:0.30, r:215, g:110, b:60 },   // orange
-  {t:0.58, r:170, g:180, b:190},   // neutral grey
-  {t:1,    r:26,  g:82,  b:118}    // deep blue
+const DECADES = [
+  {label:'1979–89', lo:1979, hi:1989},
+  {label:'1990–99', lo:1990, hi:1999},
+  {label:'2000–09', lo:2000, hi:2009},
+  {label:'2010–19', lo:2010, hi:2019},
+  {label:'2020–24', lo:2020, hi:2024},
 ];
-const V_MIN = 3.41, V_MAX = 7.84;
 
-function valColor(v) {
-  const t = Math.max(0, Math.min(1, (v - V_MIN) / (V_MAX - V_MIN)));
-  let lo = STOPS[0], hi = STOPS[1];
-  for(let i=0;i<STOPS.length-1;i++){
-    if(t>=STOPS[i].t && t<=STOPS[i+1].t){ lo=STOPS[i]; hi=STOPS[i+1]; break; }
-  }
-  const s = (t - lo.t) / (hi.t - lo.t);
-  const r = Math.round(lo.r + (hi.r-lo.r)*s);
-  const g = Math.round(lo.g + (hi.g-lo.g)*s);
-  const b = Math.round(lo.b + (hi.b-lo.b)*s);
-  return `rgb(${r},${g},${b})`;
+/* ── COLOR ────────────────────────────────────────────────────────────── */
+const V_MIN=3.41, V_MAX=7.84;
+const STOPS=[{t:0,r:146,g:39,b:30},{t:.30,r:215,g:110,b:60},{t:.58,r:170,g:180,b:190},{t:1,r:26,g:82,b:118}];
+function valColor(v){
+  const t=Math.max(0,Math.min(1,(v-V_MIN)/(V_MAX-V_MIN)));
+  let lo=STOPS[0],hi=STOPS[1];
+  for(let i=0;i<STOPS.length-1;i++) if(t>=STOPS[i].t&&t<=STOPS[i+1].t){lo=STOPS[i];hi=STOPS[i+1];break;}
+  const s=(t-lo.t)/(hi.t-lo.t);
+  return `rgb(${Math.round(lo.r+(hi.r-lo.r)*s)},${Math.round(lo.g+(hi.g-lo.g)*s)},${Math.round(lo.b+(hi.b-lo.b)*s)})`;
 }
 
-const S = { theme:'light', idx:0, playing:false, timer:null };
+/* ── STATE ────────────────────────────────────────────────────────────── */
+const S = {
+  theme:'light', ys:1979, ye:2024,
+  idx:46, playing:false, timer:null,
+  showTrend:false, showDecades:false, showSort:false,
+  selYear:null
+};
 
-function plotLayout(dk) {
-  const gc = dk ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)';
-  const tc = dk ? '#8E8E93' : '#6E6E73';
-  const bg = dk ? '#1C1C1E' : '#FFFFFF';
+/* ── HELPERS ──────────────────────────────────────────────────────────── */
+function filtPairs(){
+  return YEARS.map((y,i)=>({y,v:SEP[i]})).filter(p=>p.y>=S.ys&&p.y<=S.ye);
+}
+function decPairs(){
+  return DECADES.map(d=>{
+    const vals=YEARS.filter(y=>y>=Math.max(d.lo,S.ys)&&y<=Math.min(d.hi,S.ye)).map(y=>SEP[y-1979]);
+    if(!vals.length) return null;
+    const mean=vals.reduce((a,b)=>a+b,0)/vals.length;
+    return {y:d.label,v:+mean.toFixed(2),lo:Math.min(...vals),hi:Math.max(...vals),n:vals.length};
+  }).filter(Boolean);
+}
+function linReg(xs,ys){
+  const n=xs.length, mx=xs.reduce((a,b)=>a+b,0)/n, my=ys.reduce((a,b)=>a+b,0)/n;
+  let num=0,den=0;
+  xs.forEach((x,i)=>{num+=(x-mx)*(ys[i]-my);den+=(x-mx)**2;});
+  const slope=num/den;
+  return {slope,intercept:my-slope*mx};
+}
+
+/* ── LAYOUT BASE ──────────────────────────────────────────────────────── */
+function baseLayout(dk){
+  const bg=dk?'#1C1C1E':'#fff', gc=dk?'rgba(255,255,255,.05)':'rgba(0,0,0,.05)', tc=dk?'#8E8E93':'#6E6E73';
   return {
-    paper_bgcolor: bg, plot_bgcolor: bg,
-    font: {family:'-apple-system,"SF Pro Text",sans-serif', color: dk?'#FFF':'#1D1D1F', size:11},
-    margin: {t:16, r:16, b:48, l:56},
-    hovermode: 'x unified',
-    hoverlabel: {
-      bgcolor: dk?'#2C2C2E':'#FFF',
-      bordercolor: dk?'rgba(255,255,255,.15)':'rgba(0,0,0,.1)',
-      font: {size:11.5}
-    },
-    xaxis: {
-      range: [1978.4, 2024.6],
-      gridcolor: gc, linecolor:'transparent', tickcolor:'transparent',
-      tickfont: {color:tc}, title:{text:'Year', font:{size:10,color:tc}}
-    },
-    yaxis: {
-      range: [2.6, 8.4],
-      gridcolor: gc, linecolor:'transparent', tickcolor:'transparent',
-      zeroline: false, tickfont: {color:tc},
-      title: {text:'Extent (million km²)', font:{size:10,color:tc}}
-    },
-    showlegend: false,
-    bargap: 0.18
+    paper_bgcolor:bg, plot_bgcolor:bg,
+    font:{family:'-apple-system,"SF Pro Text",sans-serif',color:dk?'#fff':'#1D1D1F',size:11},
+    margin:{t:20,r:20,b:54,l:58},
+    hovermode:'x unified',
+    hoverlabel:{bgcolor:dk?'#2C2C2E':'#fff',bordercolor:dk?'rgba(255,255,255,.12)':'rgba(0,0,0,.1)',font:{size:11.5}},
+    xaxis:{gridcolor:gc,linecolor:'transparent',tickcolor:'transparent',tickfont:{color:tc}},
+    yaxis:{title:{text:'Extent (million km²)',font:{size:10,color:tc}},
+      gridcolor:gc,linecolor:'transparent',tickcolor:'transparent',
+      zeroline:false,tickfont:{color:tc},range:[2.2,9.0]},
+    showlegend:false, bargap:0.18
   };
 }
 
-function draw() {
-  const dk = S.theme === 'dark';
-  const n  = S.idx;
+/* ── DRAW ─────────────────────────────────────────────────────────────── */
+function draw(){
+  const dk = S.theme==='dark';
+  let traces=[], layout=baseLayout(dk), anns=[];
 
-  const xs = YEARS.slice(0, n);
-  const ys = SEP.slice(0, n);
-  const colors = ys.map(valColor);
+  if(S.showDecades){
+    const dp=decPairs();
+    traces=[{
+      x:dp.map(p=>p.y), y:dp.map(p=>p.v), type:'bar',
+      marker:{color:dp.map(p=>valColor(p.v))},
+      error_y:{type:'data',symmetric:false,
+        array:dp.map(p=>+(p.hi-p.v).toFixed(2)),
+        arrayminus:dp.map(p=>+(p.v-p.lo).toFixed(2)),
+        visible:true,color:dk?'rgba(255,255,255,.3)':'rgba(0,0,0,.2)',width:5,thickness:1.5},
+      hovertemplate:'<b>%{x}</b><br>Mean: %{y:.2f} M km²<extra></extra>'
+    }];
+    layout.xaxis.title={text:'Decade',font:{size:10,color:dk?'#8E8E93':'#6E6E73'}};
+    anns.push({xref:'paper',yref:'paper',x:.5,y:1.02,xanchor:'center',showarrow:false,
+      text:'Decade mean · whiskers = range within decade · color = mean extent',
+      font:{size:9.5,color:dk?'#8E8E93':'#6E6E73'}});
 
-  // highlight the last bar
-  const lineWidths = ys.map((_,i) => i===n-1 ? 1.8 : 0);
-  const lineColors = ys.map((_,i) => i===n-1 ? (dk?'#FFF':'#1D1D1F') : 'transparent');
+  } else {
+    // Chronological or sorted
+    let pairs=filtPairs().slice(0, S.idx);
+    if(S.showSort) pairs=[...pairs].sort((a,b)=>a.v-b.v);
 
-  const trace = {
-    x: xs, y: ys, type: 'bar',
-    marker: {
-      color: colors,
-      line: { color: lineColors, width: lineWidths }
-    },
-    hovertemplate: '<b>%{x}</b>: %{y:.2f} M km²<extra></extra>'
-  };
+    const xs=pairs.map(p=>String(p.y));
+    const vs=pairs.map(p=>p.v);
 
-  Plotly.react('chart', [trace], plotLayout(dk), {
-    responsive: true, displaylogo: false,
-    displayModeBar: true,
-    modeBarButtonsToRemove: ['lasso2d','select2d','autoScale2d'],
-    toImageButtonOptions: {format:'png',width:1600,height:900,scale:2,filename:'arctic-sea-ice'}
+    traces=[{
+      x:xs, y:vs, type:'bar',
+      marker:{
+        color:vs.map(valColor),
+        line:{
+          color:xs.map(x=>+x===S.selYear?(dk?'#fff':'#1D1D1F'):'transparent'),
+          width:xs.map(x=>+x===S.selYear?2:0)
+        }
+      },
+      hovertemplate:'<b>%{x}</b>: %{y:.2f} M km²<extra></extra>'
+    }];
+
+    // Trend line (only in chronological mode, numeric x)
+    if(S.showTrend && !S.showSort && pairs.length>2){
+      const numX=pairs.map(p=>p.y);
+      const {slope,intercept}=linReg(numX,vs);
+      // plot as scatter over the same categorical x
+      const tX=[xs[0],xs[xs.length-1]];
+      const tY=[slope*pairs[0].y+intercept, slope*pairs[pairs.length-1].y+intercept];
+      traces.push({
+        x:tX,y:tY,mode:'lines',type:'scatter',
+        line:{color:'#FF3B30',width:1.8,dash:'dot'},
+        hovertemplate:'Trend: %{y:.2f} M km²<extra></extra>'
+      });
+    }
+
+    // Details-on-demand annotation (click)
+    if(S.selYear!==null && xs.includes(String(S.selYear))){
+      const v=SEP[S.selYear-1979];
+      const sortedVals=[...SEP].sort((a,b)=>a-b);
+      const rank=sortedVals.indexOf(v)+1;
+      const pct=((v-7.05)/7.05*100).toFixed(1);
+      anns.push({
+        x:String(S.selYear), y:v, xref:'x', yref:'y',
+        text:`${S.selYear}<br><b>${v.toFixed(2)} M km²</b><br>Rank ${rank}/46 · ${pct < 0 ? '' : '+'}${pct}% vs 1979`,
+        showarrow:true, arrowhead:2, ax:0, ay:-52,
+        font:{size:10.5, color:dk?'#fff':'#1D1D1F'},
+        bgcolor:dk?'rgba(28,28,30,.95)':'rgba(255,255,255,.95)',
+        bordercolor:dk?'rgba(255,255,255,.18)':'rgba(0,0,0,.14)',
+        borderwidth:1, borderpad:7, align:'center'
+      });
+    }
+
+    layout.xaxis.title={
+      text:S.showSort?'Year (sorted by ascending extent)':'Year',
+      font:{size:10,color:dk?'#8E8E93':'#6E6E73'}
+    };
+  }
+
+  layout.annotations=anns;
+
+  Plotly.react('chart',traces,layout,{
+    responsive:true, displaylogo:false, displayModeBar:true,
+    modeBarButtonsToRemove:['lasso2d','select2d','autoScale2d'],
+    toImageButtonOptions:{format:'png',width:1600,height:900,scale:2,filename:'arctic-sea-ice'}
   });
 
-  // sidebar info
-  if(n > 0) {
-    const yr = YEARS[n-1], v = SEP[n-1];
-    document.getElementById('yr').textContent  = yr;
-    document.getElementById('ext').textContent = v.toFixed(2) + ' M km²';
-    document.getElementById('progress-fill').style.width = ((n-1)/(YEARS.length-1)*100)+'%';
-  } else {
-    document.getElementById('yr').textContent  = '—';
-    document.getElementById('ext').textContent = '';
-    document.getElementById('progress-fill').style.width = '0%';
+  // Click handler → details-on-demand
+  const el=document.getElementById('chart');
+  el.removeAllListeners&&el.removeAllListeners('plotly_click');
+  if(!S.showDecades){
+    el.on('plotly_click',d=>{
+      if(!d.points.length)return;
+      const yr=+d.points[0].x;
+      S.selYear=S.selYear===yr?null:yr;
+      draw();
+    });
   }
+
+  updateCtrl();
 }
 
-function togglePlay() {
-  S.playing ? stopPlay() : startPlay();
+/* ── CONTROLS SYNC ────────────────────────────────────────────────────── */
+function updateCtrl(){
+  const fp=filtPairs(), n=fp.length;
+  // progress
+  document.getElementById('progress-fill').style.width=(n>0?(S.idx-1)/(n-1)*100:0)+'%';
+  // anim year display
+  const visible=fp.slice(0,S.idx);
+  document.getElementById('anim-yr').textContent=visible.length?visible[visible.length-1].y:'';
+  // button states
+  ['trend','decades','sort'].forEach(k=>{
+    document.getElementById('btn-'+k).classList.toggle('on',S['show'+k.charAt(0).toUpperCase()+k.slice(1)]);
+  });
+  // disable play/sort when decades mode is on
+  document.getElementById('play-btn').disabled=S.showDecades;
+  document.getElementById('btn-sort').disabled=S.showDecades;
+  document.getElementById('btn-trend').disabled=S.showSort||S.showDecades;
 }
-function startPlay() {
-  if(S.idx >= YEARS.length) S.idx = 0;
-  S.playing = true;
-  document.getElementById('play-btn').textContent = 'Pause';
+
+/* ── TOGGLE ───────────────────────────────────────────────────────────── */
+function toggle(key){
+  // mutually exclusive: decades vs sort
+  if(key==='showDecades'&&S.showSort) S.showSort=false;
+  if(key==='showSort'&&S.showDecades) S.showDecades=false;
+  if(key==='showSort') S.showTrend=false;
+  S[key]=!S[key];
+  if(S.showDecades) stopPlay();
+  S.selYear=null;
+  draw();
+}
+
+/* ── YEAR FILTER SLIDER ───────────────────────────────────────────────── */
+function initSliders(){
+  const lo=document.getElementById('sl-lo'), hi=document.getElementById('sl-hi');
+  function sync(){
+    let a=+lo.value, b=+hi.value;
+    if(a>b-3){a=b-3; lo.value=a;}
+    S.ys=a; S.ye=b;
+    document.getElementById('yr-disp').textContent=`${a} – ${b}`;
+    fillSlider();
+    // reset idx to show all in new range
+    S.idx=filtPairs().length;
+    S.selYear=null;
+    draw();
+  }
+  lo.addEventListener('input',sync);
+  hi.addEventListener('input',sync);
+  fillSlider();
+}
+function fillSlider(){
+  const mn=1979,mx=2024,rng=mx-mn;
+  const l=(S.ys-mn)/rng*100, r=100-(S.ye-mn)/rng*100;
+  const f=document.getElementById('slider-fill');
+  f.style.left=l+'%'; f.style.right=r+'%'; f.style.top='9.5px'; f.style.height='3px';
+}
+
+/* ── ANIMATION ────────────────────────────────────────────────────────── */
+function togglePlay(){ S.playing?stopPlay():startPlay(); }
+function startPlay(){
+  if(S.showDecades) return;
+  const fp=filtPairs();
+  if(S.idx>=fp.length) S.idx=0;
+  S.playing=true;
+  document.getElementById('play-btn').textContent='Pause';
   document.getElementById('play-btn').classList.add('on');
-  S.timer = setInterval(() => {
+  S.timer=setInterval(()=>{
     S.idx++;
     draw();
-    if(S.idx >= YEARS.length) stopPlay();
-  }, 130);
+    if(S.idx>=filtPairs().length) stopPlay();
+  },130);
 }
-function stopPlay() {
-  S.playing = false;
-  clearInterval(S.timer);
-  document.getElementById('play-btn').textContent = 'Play';
+function stopPlay(){
+  S.playing=false; clearInterval(S.timer);
+  document.getElementById('play-btn').textContent='Play';
   document.getElementById('play-btn').classList.remove('on');
 }
-function resetChart() {
+function resetAll(){
+  stopPlay(); S.idx=filtPairs().length; S.selYear=null; draw();
+}
+function seekProgress(e){
   stopPlay();
-  S.idx = 0;
+  const rect=document.getElementById('progress-fill').parentElement.getBoundingClientRect();
+  const t=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+  S.idx=Math.max(1,Math.round(t*filtPairs().length));
+  S.selYear=null; draw();
+}
+
+/* ── THEME ────────────────────────────────────────────────────────────── */
+function toggleTheme(){
+  S.theme=S.theme==='light'?'dark':'light';
+  document.documentElement.setAttribute('data-theme',S.theme);
+  document.getElementById('theme-btn').textContent=S.theme==='dark'?'Light':'Dark';
   draw();
 }
 
-function seekTo(e) {
-  stopPlay();
-  const rect = document.getElementById('progress-wrap').getBoundingClientRect();
-  const t = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-  S.idx = Math.round(t * (YEARS.length - 1)) + 1;
-  draw();
-}
-
-function toggleTheme() {
-  S.theme = S.theme === 'light' ? 'dark' : 'light';
-  document.documentElement.setAttribute('data-theme', S.theme);
-  document.getElementById('theme-btn').textContent = S.theme === 'dark' ? 'Light' : 'Dark';
-  draw();
-}
-
-document.addEventListener('keydown', e => {
-  if(e.key === ' ')           { e.preventDefault(); togglePlay(); }
-  if(e.key === 'ArrowRight')  { stopPlay(); S.idx = Math.min(YEARS.length, S.idx+1); draw(); }
-  if(e.key === 'ArrowLeft')   { stopPlay(); S.idx = Math.max(0, S.idx-1);             draw(); }
+/* ── KEYBOARD ─────────────────────────────────────────────────────────── */
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT') return;
+  const fp=filtPairs();
+  if(e.key===' '){e.preventDefault();togglePlay();}
+  if(e.key==='ArrowRight'){stopPlay();S.idx=Math.min(fp.length,S.idx+1);S.selYear=null;draw();}
+  if(e.key==='ArrowLeft') {stopPlay();S.idx=Math.max(1,S.idx-1);S.selYear=null;draw();}
+  if(e.key==='Escape'){S.selYear=null;draw();}
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-  S.idx = YEARS.length; // show all on load
+/* ── INIT ─────────────────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded',()=>{
+  initSliders();
+  S.idx=YEARS.length;
   draw();
 });
 </script>
