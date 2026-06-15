@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Global Climate &amp; Energy Dashboard · From Prompt to Plot 2026</title>
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js" charset="utf-8"></script>
+<style>
+/* ── Custom properties (light / dark) ─────────────────────────────────── */
+:root {
+  --bg:          #F4F7FA;
+  --bg-card:     #FFFFFF;
+  --bg-ctrl:     #EDF2F7;
+  --text:        #1C2833;
+  --muted:       #7F8C8D;
+  --accent:      #2471A3;
+  --accent-lt:   #AED6F1;
+  --red:         #C0392B;
+  --gold:        #D4AC0D;
+  --green:       #27AE60;
+  --border:      #DEE6EE;
+  --shadow:      0 2px 10px rgba(0,0,0,.07);
+  --shadow-hov:  0 6px 20px rgba(0,0,0,.13);
+  --radius:      10px;
+  --header-h:    110px;
+  --nav-h:       44px;
+  --ctrl-h:      56px;
+}
+[data-theme="dark"] {
+  --bg:        #0D1117;
+  --bg-card:   #161B22;
+  --bg-ctrl:   #21262D;
+  --text:      #E6EDF3;
+  --muted:     #8B949E;
+  --accent:    #58A6FF;
+  --accent-lt: #1F3A5F;
+  --border:    #30363D;
+  --shadow:    0 2px 10px rgba(0,0,0,.4);
+  --shadow-hov:0 6px 20px rgba(0,0,0,.65);
+}
+
+/* ── Reset ─────────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+     background:var(--bg);color:var(--text);min-height:100vh;
+     transition:background .25s,color .25s}
+
+/* ── Header ────────────────────────────────────────────────────────────── */
+#header{
+  position:sticky;top:0;z-index:200;
+  background:var(--bg-card);border-bottom:1px solid var(--border);
+  box-shadow:var(--shadow);
+}
+.header-top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 22px;gap:12px;
+}
+.header-title h1{font-size:1.15rem;font-weight:700;color:var(--text);
+  font-family:Georgia,serif;line-height:1.25}
+.header-title p{font-size:.72rem;color:var(--muted);margin-top:2px}
+.header-acts{display:flex;gap:8px;align-items:center;flex-shrink:0}
+
+.stats-bar{
+  display:flex;border-top:1px solid var(--border);overflow-x:auto;
+}
+.stat{
+  flex:1;min-width:110px;padding:7px 14px;
+  border-right:1px solid var(--border);text-align:center;
+  cursor:default;transition:background .15s;
+}
+.stat:last-child{border-right:none}
+.stat:hover{background:var(--bg-ctrl)}
+.stat-val{display:block;font-size:1.05rem;font-weight:700;
+  color:var(--accent);font-family:Georgia,serif}
+.stat-lbl{font-size:.63rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.5px}
+
+/* ── Tab bar ───────────────────────────────────────────────────────────── */
+#tabbar{
+  display:flex;background:var(--bg-card);border-bottom:2px solid var(--border);
+  padding:0 22px;overflow-x:auto;gap:2px;
+}
+.tab{
+  background:none;border:none;border-bottom:3px solid transparent;
+  margin-bottom:-2px;padding:11px 16px;cursor:pointer;
+  font-size:.82rem;font-weight:500;color:var(--muted);white-space:nowrap;
+  transition:color .15s,border-color .15s;
+}
+.tab:hover{color:var(--accent)}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ── Global controls ───────────────────────────────────────────────────── */
+#ctrl-bar{
+  background:var(--bg-card);border-bottom:1px solid var(--border);
+  padding:9px 22px;display:flex;align-items:center;gap:20px;
+  flex-wrap:wrap;
+}
+.ctrl-group{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ctrl-lbl{font-size:.72rem;color:var(--muted);font-weight:600;
+  text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+
+/* dual range */
+.dslider{position:relative;width:210px;height:22px}
+.dslider input[type=range]{
+  position:absolute;left:0;right:0;width:100%;
+  pointer-events:none;-webkit-appearance:none;appearance:none;
+  background:transparent;height:22px;
+}
+.dslider input[type=range]::-webkit-slider-runnable-track{
+  height:4px;background:var(--border);border-radius:2px}
+.dslider input[type=range]::-moz-range-track{
+  height:4px;background:var(--border);border-radius:2px}
+.dslider input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;pointer-events:all;
+  width:17px;height:17px;border-radius:50%;
+  background:var(--accent);border:2px solid var(--bg-card);
+  box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:grab;margin-top:-6px}
+.dslider input[type=range]::-moz-range-thumb{
+  pointer-events:all;border:none;
+  width:15px;height:15px;border-radius:50%;
+  background:var(--accent);cursor:grab}
+#slider-fill{
+  position:absolute;top:9px;height:4px;
+  background:var(--accent);border-radius:2px;pointer-events:none;z-index:1}
+
+.yr-disp{
+  font-weight:700;font-size:.88rem;color:var(--accent);
+  min-width:96px;font-family:Georgia,serif;text-align:center}
+
+/* buttons */
+.btn{
+  background:var(--bg-ctrl);border:1px solid var(--border);border-radius:6px;
+  padding:5px 13px;cursor:pointer;font-size:.78rem;color:var(--text);
+  transition:all .15s;white-space:nowrap}
+.btn:hover,.btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.sm{padding:4px 9px;font-size:.73rem}
+
+/* ── Main ──────────────────────────────────────────────────────────────── */
+main{max-width:1380px;margin:0 auto;padding:18px 22px}
+
+.panel{display:none}
+.panel.on{display:block;animation:fadein .22s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* cards */
+.card{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);
+  margin-bottom:16px}
+.card-head{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.card-title{font-family:Georgia,serif;font-size:1rem;font-weight:700}
+.card-sub{font-size:.72rem;color:var(--muted);margin-top:3px}
+.card-opts{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+
+/* insight strip */
+.insight-strip{
+  background:linear-gradient(135deg,#1A3A5F,#2471A3);
+  color:#fff;border-radius:var(--radius);padding:18px 22px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  gap:18px;margin-bottom:16px}
+.ins-num{font-family:Georgia,serif;font-size:2rem;font-weight:700;
+  color:#AED6F1;line-height:1}
+.ins-lbl{font-size:.73rem;opacity:.85;margin-top:3px}
+
+/* overview grid */
+.ov-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.mini-card{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);
+  cursor:pointer;transition:all .18s}
+.mini-card:hover{box-shadow:var(--shadow-hov);border-color:var(--accent);
+  transform:translateY(-2px)}
+.mini-hd{font-size:.72rem;font-weight:600;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+
+/* map layout */
+.map-wrap{display:grid;grid-template-columns:1fr 280px;gap:16px}
+.detail-panel{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.detail-panel h3{font-family:Georgia,serif;font-size:.95rem;margin-bottom:10px}
+.detail-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:7px 0;border-bottom:1px solid var(--border);font-size:.8rem}
+.detail-row:last-of-type{border-bottom:none}
+.detail-val{font-weight:700;color:var(--accent)}
+
+/* pill toggles */
+.pill{
+  display:inline-flex;align-items:center;gap:5px;cursor:pointer;
+  font-size:.75rem;color:var(--muted);padding:4px 9px;border-radius:20px;
+  border:1px solid var(--border);background:var(--bg-ctrl);
+  transition:all .15s;user-select:none}
+.pill:hover{border-color:var(--accent);color:var(--accent)}
+.pill.on{background:var(--accent-lt);border-color:var(--accent);color:var(--accent)}
+.pill input{display:none}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* country buttons */
+.ctry-grid{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.ctry-btn{
+  background:var(--bg-ctrl);border:1px solid var(--border);border-radius:20px;
+  padding:3px 9px;cursor:pointer;font-size:.72rem;color:var(--muted);
+  transition:all .15s}
+.ctry-btn:hover{border-color:var(--accent);color:var(--accent)}
+.ctry-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* select */
+select{background:var(--bg-ctrl);border:1px solid var(--border);
+  border-radius:6px;padding:4px 9px;font-size:.78rem;color:var(--text);cursor:pointer}
+
+/* scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+
+/* ── Footer ────────────────────────────────────────────────────────────── */
+footer{
+  margin-top:28px;padding:18px 22px;border-top:1px solid var(--border);
+  text-align:center}
+footer p{font-size:.7rem;color:var(--muted);line-height:1.9}
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media(max-width:860px){
+  .ov-grid,.map-wrap{grid-template-columns:1fr}
+  .dslider{width:150px}
+  .insight-strip{grid-template-columns:1fr 1fr}
+}
+@media(max-width:540px){
+  .header-title h1{font-size:.95rem}
+  .stat-val{font-size:.9rem}
+  .insight-strip{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  HEADER                                                                  -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<div id="header">
+  <div class="header-top">
+    <div class="header-title">
+      <h1>Global Climate &amp; Energy Dashboard</h1>
+      <p>Fossil fuel dependency · Global warming · The energy transition · 1950–2023</p>
+    </div>
+    <div class="header-acts">
+      <button class="btn sm" id="theme-btn" onclick="toggleTheme()" title="Toggle dark mode">🌙 Dark</button>
+      <button class="btn sm" onclick="dlChart()" title="Download current chart as PNG">↓ PNG</button>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat" title="Highest annual mean temperature anomaly on record">
+      <span class="stat-val" id="s-rec">+1.17°C</span>
+      <span class="stat-lbl">Record anomaly (2023)</span>
+    </div>
+    <div class="stat" title="Atmospheric CO₂ at Mauna Loa, 2023">
+      <span class="stat-val">422 ppm</span>
+      <span class="stat-lbl">CO₂ level (2023)</span>
+    </div>
+    <div class="stat" title="Rise in CO₂ since monitoring began">
+      <span class="stat-val">+105 ppm</span>
+      <span class="stat-lbl">CO₂ rise since 1960</span>
+    </div>
+    <div class="stat" title="Wind + Solar share of global electricity generation">
+      <span class="stat-val">16%</span>
+      <span class="stat-lbl">Wind+Solar share (2022)</span>
+    </div>
+    <div class="stat" title="Qatar emits 310× more CO₂ per person than Ethiopia">
+      <span class="stat-val" style="color:var(--red)">310×</span>
+      <span class="stat-lbl">Qatar vs Ethiopia (per capita)</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  TAB BAR                                                                 -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<div id="tabbar">
+  <button class="tab on" data-tab="overview">📊 Overview</button>
+  <button class="tab" data-tab="temperature">🌡 Temperature &amp; CO₂</button>
+  <button class="tab" data-tab="energy">⚡ Energy Transition</button>
+  <button class="tab" data-tab="map">🗺 Emissions Map</button>
+  <button class="tab" data-tab="compare">📈 Renewable Growth</button>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  GLOBAL CONTROLS                                                         -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<div id="ctrl-bar">
+  <div class="ctrl-group">
+    <span class="ctrl-lbl">Year range</span>
+    <div class="dslider" id="dslider">
+      <div id="slider-fill"></div>
+      <input type="range" id="sl-lo" min="1950" max="2022" value="1950" step="1">
+      <input type="range" id="sl-hi" min="1951" max="2023" value="2023" step="1">
+    </div>
+    <span class="yr-disp" id="yr-disp">1950 – 2023</span>
+  </div>
+  <div class="ctrl-group">
+    <button class="btn" id="play-btn" onclick="togglePlay()">▶ Play</button>
+    <button class="btn" onclick="resetAll()">↺ Reset</button>
+  </div>
+  <span style="font-size:.7rem;color:var(--muted);margin-left:auto">
+    ← → arrow keys · Space to play/pause
+  </span>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  MAIN                                                                    -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<main>
+
+  <!-- ── OVERVIEW ─────────────────────────────────────────────────────── -->
+  <div class="panel on" id="panel-overview">
+    <div class="insight-strip">
+      <div class="ins">
+        <div class="ins-num" id="ins-avg">+0.40°C</div>
+        <div class="ins-lbl">Avg temperature anomaly in selected range</div>
+      </div>
+      <div class="ins">
+        <div class="ins-num" id="ins-co2rise">+105 ppm</div>
+        <div class="ins-lbl">CO₂ rise in selected range</div>
+      </div>
+      <div class="ins">
+        <div class="ins-num">42×</div>
+        <div class="ins-lbl">Solar electricity growth (2000 → 2022)</div>
+      </div>
+      <div class="ins">
+        <div class="ins-num" id="ins-hot">2023</div>
+        <div class="ins-lbl">Hottest year on record (in selected range)</div>
+      </div>
+    </div>
+    <div class="ov-grid">
+      <div class="mini-card" onclick="switchTab('temperature')" title="Click to explore full chart">
+        <div class="mini-hd">🌡 Temperature anomaly &mdash; click to explore</div>
+        <div id="mini-temp" style="height:195px"></div>
+      </div>
+      <div class="mini-card" onclick="switchTab('energy')" title="Click to explore full chart">
+        <div class="mini-hd">⚡ Energy transition &mdash; click to explore</div>
+        <div id="mini-energy" style="height:195px"></div>
+      </div>
+      <div class="mini-card" onclick="switchTab('map')" title="Click to explore full chart">
+        <div class="mini-hd">🗺 CO₂ per capita &mdash; click to explore</div>
+        <div id="mini-map" style="height:195px"></div>
+      </div>
+      <div class="mini-card" onclick="switchTab('compare')" title="Click to explore full chart">
+        <div class="mini-hd">📈 Renewable growth &mdash; click to explore</div>
+        <div id="mini-compare" style="height:195px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TEMPERATURE ──────────────────────────────────────────────────── -->
+  <div class="panel" id="panel-temperature">
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Global Surface Temperature Anomaly &amp; Atmospheric CO₂</div>
+          <div class="card-sub">Bars: annual anomaly vs 1951–1980 baseline · Line: 10-yr rolling mean · Gold: CO₂ at Mauna Loa</div>
+        </div>
+        <div class="card-opts">
+          <label class="pill on" id="pill-co2">
+            <input type="checkbox" id="chk-co2" checked>
+            <span class="dot" style="background:#D4AC0D"></span>CO₂ overlay
+          </label>
+          <label class="pill on" id="pill-roll">
+            <input type="checkbox" id="chk-roll" checked>
+            <span class="dot" style="background:#1C2833"></span>10-yr mean
+          </label>
+          <label class="pill on" id="pill-paris">
+            <input type="checkbox" id="chk-paris" checked>
+            <span class="dot" style="background:#C0392B"></span>Paris 2015
+          </label>
+        </div>
+      </div>
+      <div id="chart-temp" style="height:430px"></div>
+    </div>
+  </div>
+
+  <!-- ── ENERGY ───────────────────────────────────────────────────────── -->
+  <div class="panel" id="panel-energy">
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Global Electricity Generation by Source, 2000–2022</div>
+          <div class="card-sub">Sources: IEA World Energy Statistics 2023; Our World in Data · Toggle sources below · Switch between absolute and percentage view</div>
+        </div>
+        <div class="card-opts">
+          <select id="e-mode" onchange="drawEnergy()">
+            <option value="abs">Absolute (PWh)</option>
+            <option value="pct">Share (%)</option>
+          </select>
+        </div>
+      </div>
+      <div class="card-opts" id="src-pills" style="margin-bottom:12px;flex-wrap:wrap"></div>
+      <div id="chart-energy" style="height:420px"></div>
+    </div>
+  </div>
+
+  <!-- ── MAP ──────────────────────────────────────────────────────────── -->
+  <div class="panel" id="panel-map">
+    <div class="map-wrap">
+      <div class="card" style="margin-bottom:0">
+        <div class="card-head">
+          <div>
+            <div class="card-title">CO₂ Emissions per Capita by Country (2021)</div>
+            <div class="card-sub">Tonnes per person · Source: Global Carbon Project / Our World in Data · <strong>Click a country</strong> for details</div>
+          </div>
+        </div>
+        <div id="chart-map" style="height:430px"></div>
+      </div>
+      <div class="detail-panel" id="map-detail">
+        <h3 id="d-name">Click a country</h3>
+        <p style="font-size:.74rem;color:var(--muted);margin-bottom:12px;line-height:1.5">
+          Select any country on the map to compare its per-capita CO₂ emissions against reference points.
+        </p>
+        <div class="detail-row"><span>CO₂ per capita</span><span class="detail-val" id="d-val">—</span></div>
+        <div class="detail-row"><span>vs world avg (4.7 t)</span><span class="detail-val" id="d-avg">—</span></div>
+        <div class="detail-row"><span>vs Qatar (31 t)</span><span class="detail-val" id="d-qt">—</span></div>
+        <div class="detail-row"><span>vs Ethiopia (0.1 t)</span><span class="detail-val" id="d-eth">—</span></div>
+        <div id="d-bar" style="height:165px;margin-top:14px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── COMPARE ──────────────────────────────────────────────────────── -->
+  <div class="panel" id="panel-compare">
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Renewable Energy Share in Electricity Generation: 2005 → 2022</div>
+          <div class="card-sub">Slope chart · Each line = one country · Slope encodes change · Source: IEA Renewables 2023 / Our World in Data</div>
+        </div>
+        <div class="card-opts">
+          <button class="btn sm" onclick="selAll()">All</button>
+          <button class="btn sm" onclick="selNone()">None</button>
+          <button class="btn sm" onclick="selGainers()">Big gainers</button>
+        </div>
+      </div>
+      <div id="ctry-btns" class="ctry-grid"></div>
+      <div id="chart-compare" style="height:430px"></div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <strong>Data sources:</strong>
+    NASA GISS Surface Temperature Analysis (GISTEMP v4) ·
+    NOAA Global Monitoring Laboratory (Mauna Loa CO₂) ·
+    IEA World Energy Statistics 2023 ·
+    Global Carbon Project · Our World in Data · IEA Renewables 2023
+  </p>
+  <p>
+    <strong>From Prompt to Plot</strong> · Data Visualization Portfolio · Spring 2026 ·
+    Gilles Harder (23-608-441) · University of St. Gallen ·
+    Prof. Dr. Peter H. Gruber ·
+    <em>Interaction: Shneiderman's 7 tasks · 9 interaction modes</em>
+  </p>
+</footer>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  SCRIPT                                                                  -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ── DATA ──────────────────────────────────────────────────────────────── */
+const YT = Array.from({length:74},(_,i)=>1950+i);
+const TA = [
+  -0.17,-0.01, 0.02, 0.08,-0.13,-0.14,-0.03, 0.03, 0.06, 0.03,
+  -0.03, 0.06, 0.03, 0.05,-0.20,-0.11,-0.06,-0.02,-0.07, 0.08,
+   0.03, 0.14, 0.01, 0.16,-0.07,-0.01,-0.10, 0.18, 0.07, 0.16,
+   0.26, 0.32, 0.14, 0.31, 0.16, 0.12, 0.18, 0.33, 0.40, 0.29,
+   0.44, 0.41, 0.22, 0.24, 0.31, 0.45, 0.35, 0.46, 0.63, 0.40,
+   0.42, 0.54, 0.63, 0.62, 0.54, 0.68, 0.61, 0.62, 0.54, 0.64,
+   0.72, 0.61, 0.64, 0.68, 0.75, 0.87, 1.01, 0.92, 0.83, 0.98,
+   1.02, 0.85, 0.89, 1.17
+];
+const YC = Array.from({length:64},(_,i)=>1960+i);
+const CO2 = [
+  316.91,317.64,318.45,318.99,319.62,320.04,321.38,322.16,323.04,324.62,
+  325.68,326.32,327.45,329.68,330.18,331.08,332.05,333.78,335.40,336.84,
+  338.75,340.11,341.45,343.05,344.65,346.12,347.42,348.93,351.48,353.20,
+  354.45,355.70,356.51,357.20,360.18,362.00,363.80,366.65,368.38,369.55,
+  371.14,373.28,375.77,377.49,379.98,381.90,383.79,385.60,387.43,389.90,
+  391.65,393.85,396.48,398.65,400.83,404.24,406.55,408.72,411.44,414.24,
+  416.45,418.56,421.08,422.52
+];
+const YE = Array.from({length:23},(_,i)=>2000+i);
+const EL = {
+  Coal:    [5990,6320,6550,6820,7100,7450,7900,8200,8650,8900,9200,9350,9400,9600,9550,9250,9150,9200,9850,9560,9220,9300,8900],
+  Gas:     [2600,2700,2800,2900,3100,3300,3500,3700,3950,4000,4150,4400,4600,4750,4800,4850,5100,5400,5650,6100,6300,6400,6500],
+  Nuclear: [2590,2650,2600,2520,2580,2628,2660,2710,2731,2757,2756,2608,2461,2359,2410,2475,2490,2497,2563,2657,2626,2653,2630],
+  Hydro:   [2645,2560,2620,2680,2800,2998,3040,3120,3288,3230,3431,3550,3680,3782,3891,3940,4080,4185,4193,4222,4355,4370,4370],
+  Wind:    [31,39,52,61,82,104,132,170,220,278,341,435,521,635,710,828,960,1120,1270,1430,1600,1870,2100],
+  Solar:   [1,1,2,2,3,3,4,7,12,20,32,65,100,140,185,251,328,444,584,720,844,1000,1324],
+  Biomass: [410,430,455,480,505,535,570,615,670,720,775,810,850,900,950,990,1030,1070,1110,1140,1170,1200,1230]
+};
+const EC = {Coal:'#2C3E50',Gas:'#8E44AD',Nuclear:'#E74C3C',
+            Hydro:'#2980B9',Wind:'#1ABC9C',Solar:'#F39C12',Biomass:'#27AE60'};
+
+const MAP = {
+  iso3:['QAT','KWT','ARE','AUS','USA','CAN','SAU','KAZ','RUS','DEU',
+        'JPN','KOR','CHN','GBR','FRA','BRA','IND','IDN','NGA','COD',
+        'ETH','BGD','PAK','MEX','ARG','ZAF','TUR','POL','ITA','ESP',
+        'NLD','SWE','CHE','AUT','NOR','FIN','UKR','IRN','EGY','THA'],
+  co2: [31.0,23.0,20.5,14.8,14.4,14.2,14.0,13.0,11.5, 7.7,
+         8.5,11.6, 8.0, 4.7, 4.3, 2.2, 1.9, 2.3, 0.6, 0.1,
+         0.1, 0.5, 0.9, 3.3, 4.2, 7.0, 5.2, 8.6, 5.2, 4.9,
+         8.1, 3.5, 3.7, 6.4, 6.5, 6.4, 3.4, 8.3, 2.2, 3.7],
+  name:['Qatar','Kuwait','UAE','Australia','USA','Canada','Saudi Arabia','Kazakhstan','Russia','Germany',
+        'Japan','South Korea','China','UK','France','Brazil','India','Indonesia','Nigeria','DR Congo',
+        'Ethiopia','Bangladesh','Pakistan','Mexico','Argentina','South Africa','Turkey','Poland','Italy','Spain',
+        'Netherlands','Sweden','Switzerland','Austria','Norway','Finland','Ukraine','Iran','Egypt','Thailand']
+};
+const RD = {
+  Norway:{a:98.8,b:98.9}, Iceland:{a:99.9,b:99.8}, Sweden:{a:44.8,b:62.3},
+  Denmark:{a:19.6,b:63.0}, Germany:{a:10.4,b:44.8}, UK:{a:4.3,b:42.0},
+  Spain:{a:20.0,b:43.7}, France:{a:13.1,b:26.0}, Italy:{a:14.7,b:38.1},
+  USA:{a:8.6,b:22.6}, China:{a:16.1,b:30.3}, India:{a:17.4,b:24.2},
+  Brazil:{a:80.0,b:83.1}, Australia:{a:7.4,b:35.9}, Japan:{a:10.7,b:22.8}
+};
+
+/* ── STATE ─────────────────────────────────────────────────────────────── */
+const S = {
+  tab:'overview', ys:1950, ye:2023,
+  playing:false, timer:null, theme:'light',
+  src: new Set(Object.keys(EL)),
+  ctry: new Set(Object.keys(RD))
+};
+
+/* ── THEME ─────────────────────────────────────────────────────────────── */
+function toggleTheme(){
+  S.theme = S.theme==='light'?'dark':'light';
+  document.documentElement.setAttribute('data-theme',S.theme);
+  document.getElementById('theme-btn').textContent = S.theme==='dark'?'☀️ Light':'🌙 Dark';
+  refresh();
+}
+
+/* ── PLOTLY BASE LAYOUT ─────────────────────────────────────────────────── */
+function base(extra={}){
+  const dk = S.theme==='dark';
+  return {
+    paper_bgcolor: dk?'#161B22':'#fff',
+    plot_bgcolor:  dk?'#161B22':'#fff',
+    font:{family:'-apple-system,sans-serif',color:dk?'#E6EDF3':'#1C2833',size:11},
+    margin:{t:36,r:60,b:46,l:58},
+    showlegend:false,
+    hovermode:'x unified',
+    hoverlabel:{bgcolor:dk?'#21262D':'#fff',bordercolor:'#2471A3',font:{size:11.5}},
+    xaxis:{gridcolor:dk?'#30363D':'#EEF2F5',linecolor:dk?'#30363D':'#DDD',zeroline:false},
+    yaxis:{gridcolor:dk?'#30363D':'#EEF2F5',linecolor:dk?'#30363D':'#DDD',zeroline:false},
+    ...extra
+  };
+}
+const CFG = {
+  responsive:true, displaylogo:false,
+  displayModeBar:true,
+  modeBarButtonsToRemove:['lasso2d','select2d'],
+  toImageButtonOptions:{format:'png',width:1600,height:900,scale:2,filename:'climate-dashboard'}
+};
+const CFG0 = {responsive:true,displayModeBar:false};
+
+/* ── SLIDER ─────────────────────────────────────────────────────────────── */
+function initSliders(){
+  const lo=document.getElementById('sl-lo'), hi=document.getElementById('sl-hi');
+  function sync(){
+    let a=+lo.value, b=+hi.value;
+    if(a>b-4){a=b-4; lo.value=a;}
+    S.ys=a; S.ye=b;
+    document.getElementById('yr-disp').textContent=`${a} – ${b}`;
+    fillSlider();
+    refresh();
+    updateInsights();
+  }
+  lo.addEventListener('input',sync);
+  hi.addEventListener('input',sync);
+  fillSlider();
+}
+function fillSlider(){
+  const mn=1950,mx=2023,rng=mx-mn;
+  const l=(S.ys-mn)/rng*100, r=100-(S.ye-mn)/rng*100;
+  const f=document.getElementById('slider-fill');
+  f.style.left=l+'%'; f.style.right=r+'%';
+  f.style.top='9px'; f.style.height='4px';
+}
+
+/* ── ANIMATION ──────────────────────────────────────────────────────────── */
+function togglePlay(){
+  S.playing ? stopPlay() : startPlay();
+}
+function startPlay(){
+  if(S.tab==='map') return;
+  S.playing=true;
+  document.getElementById('play-btn').textContent='⏸ Pause';
+  document.getElementById('play-btn').classList.add('on');
+  const hi=document.getElementById('sl-hi');
+  if(+hi.value>=2023){
+    document.getElementById('sl-lo').value=1950; S.ys=1950;
+    hi.value=1960; S.ye=1960;
+  }
+  S.timer=setInterval(()=>{
+    let v=+document.getElementById('sl-hi').value+1;
+    if(v>2023){stopPlay();return;}
+    document.getElementById('sl-hi').value=v;
+    S.ye=v;
+    document.getElementById('yr-disp').textContent=`${S.ys} – ${v}`;
+    fillSlider(); refresh(); updateInsights();
+  },100);
+}
+function stopPlay(){
+  S.playing=false; clearInterval(S.timer);
+  document.getElementById('play-btn').textContent='▶ Play';
+  document.getElementById('play-btn').classList.remove('on');
+}
+function resetAll(){
+  stopPlay();
+  document.getElementById('sl-lo').value=1950;
+  document.getElementById('sl-hi').value=2023;
+  S.ys=1950; S.ye=2023;
+  document.getElementById('yr-disp').textContent='1950 – 2023';
+  fillSlider(); refresh(); updateInsights();
+}
+
+/* ── TABS ───────────────────────────────────────────────────────────────── */
+function switchTab(t){
+  stopPlay();
+  S.tab=t;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id==='panel-'+t));
+  document.getElementById('ctrl-bar').style.display=t==='map'?'none':'flex';
+  history.replaceState(null,'',`#${t}`);
+  refresh();
+}
+function refresh(){
+  switch(S.tab){
+    case 'overview':    drawOverview();   break;
+    case 'temperature': drawTemp();       break;
+    case 'energy':      drawEnergy();     break;
+    case 'map':         drawMap();        break;
+    case 'compare':     drawCompare();    break;
+  }
+}
+
+/* ── INSIGHTS ───────────────────────────────────────────────────────────── */
+function updateInsights(){
+  // avg anomaly
+  const ts=YT.filter(y=>y>=S.ys&&y<=S.ye).map(y=>TA[y-1950]);
+  if(ts.length){
+    const avg=ts.reduce((a,b)=>a+b,0)/ts.length;
+    document.getElementById('ins-avg').textContent=(avg>=0?'+':'')+avg.toFixed(2)+'°C';
+  }
+  // co2 rise
+  const cs=YC.filter(y=>y>=S.ys&&y<=S.ye);
+  if(cs.length>=2){
+    const rise=CO2[cs[cs.length-1]-1960]-CO2[cs[0]-1960];
+    document.getElementById('ins-co2rise').textContent=(rise>=0?'+':'')+rise.toFixed(0)+' ppm';
+  }
+  // hottest year
+  let hotY=S.ys, hotV=-99;
+  YT.filter(y=>y>=S.ys&&y<=S.ye).forEach(y=>{const v=TA[y-1950];if(v>hotV){hotV=v;hotY=y;}});
+  document.getElementById('ins-hot').textContent=hotY;
+}
+
+/* ── ROLLING MEAN ───────────────────────────────────────────────────────── */
+function rolling(vals,w){
+  return vals.map((_,i)=>{
+    const lo=Math.max(0,i-Math.floor(w/2)),hi=Math.min(vals.length-1,i+Math.floor(w/2));
+    const s=vals.slice(lo,hi+1);
+    return s.reduce((a,b)=>a+b,0)/s.length;
+  });
+}
+
+/* ── COLOUR HELPERS ─────────────────────────────────────────────────────── */
+function anomColor(v){
+  if(v>=1.0) return '#7B241C';
+  if(v>=0.7) return '#C0392B';
+  if(v>=0.4) return '#E67E22';
+  if(v>=0.1) return '#F39C12';
+  if(v>=0)   return '#AED6F1';
+  if(v>=-0.1)return '#5DADE2';
+  return '#2980B9';
+}
+
+/* ── OVERVIEW ───────────────────────────────────────────────────────────── */
+function drawOverview(){
+  const dk=S.theme==='dark';
+  const bg='transparent';
+  const gc=dk?'#30363D':'#EEF2F5';
+  const ax={showgrid:false,zeroline:false,color:dk?'#8B949E':'#7F8C8D'};
+  const margins={t:4,r:6,b:26,l:36};
+
+  // mini temperature
+  const yrs=YT.filter(y=>y>=S.ys&&y<=S.ye);
+  const tv=yrs.map(y=>TA[y-1950]);
+  Plotly.react('mini-temp',[{
+    x:yrs,y:tv,type:'bar',
+    marker:{color:tv.map(anomColor)},
+    hovertemplate:'%{x}: %{y:+.2f}°C<extra></extra>'
+  }],{
+    paper_bgcolor:bg,plot_bgcolor:bg,margin:margins,
+    xaxis:ax,yaxis:{...ax,tickformat:'+.1f'},showlegend:false,hovermode:'closest',
+    font:{size:9,color:dk?'#8B949E':'#777'}
+  },CFG0);
+
+  // mini energy (coal, wind, solar stacked)
+  const eyrs=YE.filter(y=>y>=Math.max(S.ys,2000)&&y<=Math.min(S.ye,2022));
+  const eSrc=['Coal','Wind','Solar'], eCols=['#2C3E50','#1ABC9C','#F39C12'];
+  Plotly.react('mini-energy',eSrc.map((s,i)=>({
+    x:eyrs,y:eyrs.map(y=>EL[s][y-2000]/1000),
+    name:s,type:'scatter',mode:'none',fill:i===0?'tozeroy':'tonexty',
+    fillcolor:eCols[i]+(dk?'BB':'99'),line:{width:0},
+    hovertemplate:s+': %{y:.1f} PWh<extra></extra>'
+  })),{
+    paper_bgcolor:bg,plot_bgcolor:bg,margin:margins,
+    xaxis:ax,yaxis:ax,showlegend:false,hovermode:'x',
+    font:{size:9,color:dk?'#8B949E':'#777'}
+  },CFG0);
+
+  // mini map
+  Plotly.react('mini-map',[{
+    type:'choropleth',locations:MAP.iso3,z:MAP.co2,
+    text:MAP.name,colorscale:'YlOrRd',zmin:0,zmax:25,showscale:false,
+    hovertemplate:'%{text}: %{z:.1f} t<extra></extra>',
+    marker:{line:{width:0.4,color:dk?'#30363D':'#fff'}}
+  }],{
+    paper_bgcolor:bg,margin:{t:0,r:0,b:0,l:0},
+    geo:{showframe:false,showcoastlines:true,
+      coastlinecolor:dk?'#30363D':'#CCC',
+      bgcolor:bg,landcolor:dk?'#21262D':'#F0F0F0',
+      showland:true,showocean:true,oceancolor:dk?'#0D1117':'#EAF4FB',
+      projection:{type:'natural earth'}},
+    font:{size:9}
+  },CFG0);
+
+  // mini slope (all countries)
+  const ctrs=Object.keys(RD), cols=ctrs.map(c=>{
+    const g=RD[c].b-RD[c].a;
+    return g>20?'#1A5276':g>10?'#2471A3':g>0?'#7FB3D3':'#C0392B';
+  });
+  Plotly.react('mini-compare',ctrs.map((c,i)=>({
+    x:[2005,2022],y:[RD[c].a,RD[c].b],mode:'lines+markers',
+    line:{color:cols[i],width:1.4},marker:{color:cols[i],size:3.5},
+    name:c,hovertemplate:c+'<br>2005: '+RD[c].a+'%<br>2022: '+RD[c].b+'%<extra></extra>'
+  })),{
+    paper_bgcolor:bg,plot_bgcolor:bg,margin:{t:4,r:8,b:26,l:8},
+    xaxis:{tickvals:[2005,2022],ticktext:['2005','2022'],showgrid:false,
+      color:dk?'#8B949E':'#777'},
+    yaxis:{showgrid:false,ticksuffix:'%',color:dk?'#8B949E':'#777'},
+    showlegend:false,hovermode:'closest',
+    font:{size:9,color:dk?'#8B949E':'#777'}
+  },CFG0);
+}
+
+/* ── TEMPERATURE ────────────────────────────────────────────────────────── */
+function syncPills(){
+  ['co2','roll','paris'].forEach(id=>{
+    const chk=document.getElementById('chk-'+id);
+    const pil=document.getElementById('pill-'+id);
+    if(chk&&pil) pil.classList.toggle('on',chk.checked);
+  });
+}
+function drawTemp(){
+  syncPills();
+  const dk=S.theme==='dark';
+  const ys=S.ys, ye=S.ye;
+  const showCO2  =document.getElementById('chk-co2')?.checked??true;
+  const showRoll =document.getElementById('chk-roll')?.checked??true;
+  const showParis=document.getElementById('chk-paris')?.checked??true;
+
+  const yrs=YT.filter(y=>y>=ys&&y<=ye);
+  const tv=yrs.map(y=>TA[y-1950]);
+  const traces=[];
+
+  // Bars
+  traces.push({
+    x:yrs,y:tv,type:'bar',name:'Annual anomaly',
+    marker:{color:tv.map(anomColor)},
+    yaxis:'y',
+    hovertemplate:'<b>%{x}</b>: %{y:+.2f}°C<extra>Temperature anomaly</extra>'
+  });
+
+  // Rolling mean
+  if(showRoll){
+    const rm=rolling(tv,10);
+    traces.push({
+      x:yrs,y:rm,type:'scatter',mode:'lines',name:'10-yr mean',
+      line:{color:dk?'#E6EDF3':'#1C2833',width:2.2,shape:'spline'},
+      yaxis:'y',
+      hovertemplate:'%{x}: %{y:+.2f}°C (10-yr mean)<extra></extra>'
+    });
+  }
+
+  // CO₂
+  if(showCO2){
+    const cy=YC.filter(y=>y>=ys&&y<=ye);
+    const cv=cy.map(y=>CO2[y-1960]);
+    traces.push({
+      x:cy,y:cv,type:'scatter',mode:'lines',name:'CO₂ (ppm)',
+      line:{color:'#D4AC0D',width:2.4},
+      yaxis:'y2',
+      hovertemplate:'%{x}: %{y:.1f} ppm CO₂<extra></extra>'
+    });
+  }
+
+  const shapes=[],anns=[];
+  if(showParis&&2015>=ys&&2015<=ye){
+    shapes.push({type:'line',x0:2015,x1:2015,y0:-2,y1:2,
+      xref:'x',yref:'y',line:{color:'#C0392B',width:1.4,dash:'dot'}});
+    anns.push({x:2015.3,y:Math.max(...tv)*0.92,text:'Paris<br>Agreement',
+      xref:'x',yref:'y',showarrow:false,
+      font:{size:9.5,color:'#C0392B'},align:'left'});
+  }
+
+  Plotly.react('chart-temp',traces,base({
+    xaxis:{title:{text:'Year'},range:[ys-0.5,ye+0.5],
+      gridcolor:dk?'#30363D':'#EEF2F5',color:dk?'#8B949E':'#555'},
+    yaxis:{title:{text:'Temperature anomaly (°C)'},tickformat:'+.1f',
+      zeroline:true,zerolinecolor:dk?'#444':'#BBB',
+      gridcolor:dk?'#30363D':'#EEF2F5',color:dk?'#8B949E':'#555'},
+    yaxis2:showCO2?{title:{text:'CO₂ (ppm)'},overlaying:'y',side:'right',
+      gridcolor:'transparent',tickcolor:'#D4AC0D',color:'#D4AC0D',range:[280,470]}:{},
+    showlegend:true,
+    legend:{orientation:'h',x:0,y:1.07,bgcolor:'transparent',font:{size:10}},
+    shapes,annotations:anns
+  }),CFG);
+}
+
+/* ── ENERGY ─────────────────────────────────────────────────────────────── */
+function initSrcPills(){
+  const c=document.getElementById('src-pills');
+  Object.keys(EL).forEach(s=>{
+    const col=EC[s];
+    const lbl=document.createElement('label');
+    lbl.className='pill on'; lbl.id='pill-src-'+s;
+    lbl.innerHTML=`<input type="checkbox" checked><span class="dot" style="background:${col}"></span>${s}`;
+    lbl.querySelector('input').addEventListener('change',e=>{
+      lbl.classList.toggle('on',e.target.checked);
+      if(e.target.checked)S.src.add(s);else S.src.delete(s);
+      drawEnergy();
+    });
+    c.appendChild(lbl);
+  });
+}
+function drawEnergy(){
+  const dk=S.theme==='dark';
+  const ys=Math.max(S.ys,2000), ye=Math.min(S.ye,2022);
+  const yrs=YE.filter(y=>y>=ys&&y<=ye);
+  const mode=document.getElementById('e-mode')?.value??'abs';
+  const srcs=Object.keys(EL).filter(s=>S.src.has(s));
+  const traces=[];
+
+  if(mode==='pct'){
+    const tots=yrs.map(y=>{const i=y-2000;return srcs.reduce((sum,s)=>sum+EL[s][i],0);});
+    srcs.forEach((s,si)=>{
+      const vs=yrs.map((y,i)=>tots[i]>0?EL[s][y-2000]/tots[i]*100:0);
+      traces.push({x:yrs,y:vs,name:s,type:'scatter',mode:'none',stackgroup:'one',
+        fillcolor:EC[s]+(dk?'DD':'BB'),line:{width:0},
+        hovertemplate:s+': %{y:.1f}%<extra></extra>'});
+    });
+  } else {
+    const stk=new Array(yrs.length).fill(0);
+    srcs.forEach(s=>{
+      const vs=yrs.map(y=>EL[s][y-2000]/1000);
+      traces.push({
+        x:yrs,y:vs.map((v,i)=>v+stk[i]),name:s,
+        type:'scatter',mode:'lines',fill:traces.length===0?'tozeroy':'tonexty',
+        fillcolor:EC[s]+(dk?'CC':'99'),
+        line:{width:.6,color:EC[s]},
+        hovertemplate:s+': %{y:.1f} PWh<extra></extra>'
+      });
+      vs.forEach((v,i)=>stk[i]+=v);
+    });
+  }
+
+  Plotly.react('chart-energy',traces,base({
+    xaxis:{title:{text:'Year'},range:[ys-.5,ye+.5],
+      gridcolor:dk?'#30363D':'#EEF2F5',color:dk?'#8B949E':'#555'},
+    yaxis:{title:{text:mode==='pct'?'Share (%)':'Electricity generation (PWh)'},
+      gridcolor:dk?'#30363D':'#EEF2F5',color:dk?'#8B949E':'#555'},
+    showlegend:true,
+    legend:{orientation:'h',x:0,y:1.07,bgcolor:'transparent',font:{size:10}}
+  }),CFG);
+}
+
+/* ── MAP ─────────────────────────────────────────────────────────────────── */
+function drawMap(){
+  const dk=S.theme==='dark';
+  Plotly.react('chart-map',[{
+    type:'choropleth',locations:MAP.iso3,z:MAP.co2,
+    text:MAP.name.map((n,i)=>`<b>${n}</b><br>${MAP.co2[i].toFixed(1)} t CO₂/person`),
+    colorscale:[[0,'#FFFFB2'],[.1,'#FECC5C'],[.25,'#FD8D3C'],[.5,'#F03B20'],[1,'#BD0026']],
+    zmin:0,zmax:25,showscale:true,
+    colorbar:{title:{text:'t CO₂<br>per person',font:{size:11}},
+      len:.7,tickvals:[0,5,10,15,20,25],tickfont:{size:10}},
+    hovertemplate:'%{text}<extra></extra>',
+    marker:{line:{color:dk?'#30363D':'#fff',width:.5}}
+  }],{
+    ...base({margin:{t:10,r:0,b:0,l:0}}),
+    geo:{showframe:false,showcoastlines:true,
+      coastlinecolor:dk?'#30363D':'#CCC',
+      projection:{type:'natural earth'},bgcolor:'transparent',
+      landcolor:dk?'#21262D':'#F0F0F0',showland:true,
+      showocean:true,oceancolor:dk?'#0D1117':'#EAF4FB',showlakes:false}
+  },{...CFG,displayModeBar:false});
+
+  const el=document.getElementById('chart-map');
+  el.removeAllListeners&&el.removeAllListeners('plotly_click');
+  el.on('plotly_click',d=>{
+    if(!d.points.length)return;
+    const i=d.points[0].pointIndex;
+    showDetail(MAP.name[i],MAP.co2[i]);
+  });
+}
+function showDetail(name,val){
+  const dk=S.theme==='dark';
+  document.getElementById('d-name').textContent=name;
+  document.getElementById('d-val').textContent=val.toFixed(1)+' t';
+  document.getElementById('d-avg').textContent=(val/4.7).toFixed(1)+'×';
+  document.getElementById('d-qt').textContent=(val/31*100).toFixed(0)+'%';
+  document.getElementById('d-eth').textContent=(val/.1).toFixed(0)+'×';
+  Plotly.react('d-bar',[{
+    x:['Ethiopia','Brazil','World avg',name,'Qatar'],
+    y:[.1,2.2,4.7,val,31],type:'bar',
+    marker:{color:['#27AE60','#2ECC71','#3498DB',
+      val>14?'#C0392B':val>7?'#E67E22':'#3498DB','#7B241C']},
+    hovertemplate:'%{x}: %{y:.1f} t<extra></extra>',
+    text:['.1','2.2','4.7',val.toFixed(1),'31'],
+    textposition:'outside',textfont:{size:9}
+  }],{
+    paper_bgcolor:'transparent',plot_bgcolor:'transparent',
+    margin:{t:4,r:4,b:44,l:28},
+    xaxis:{showgrid:false,tickangle:-35,tickfont:{size:8.5},
+      color:dk?'#8B949E':'#555'},
+    yaxis:{showgrid:true,gridcolor:dk?'#30363D':'#EEF2F5',
+      tickfont:{size:9},color:dk?'#8B949E':'#555'},
+    font:{size:9,color:dk?'#E6EDF3':'#1C2833'},
+    showlegend:false
+  },{responsive:true,displayModeBar:false});
+}
+
+/* ── COMPARE (slope chart) ──────────────────────────────────────────────── */
+function initCtryBtns(){
+  const c=document.getElementById('ctry-btns');
+  Object.keys(RD).forEach(ct=>{
+    const b=document.createElement('button');
+    b.className='ctry-btn on'; b.textContent=ct; b.dataset.ctry=ct;
+    b.onclick=()=>{
+      if(S.ctry.has(ct)){S.ctry.delete(ct);b.classList.remove('on');}
+      else{S.ctry.add(ct);b.classList.add('on');}
+      drawCompare();
+    };
+    c.appendChild(b);
+  });
+}
+function selAll(){
+  S.ctry=new Set(Object.keys(RD));
+  document.querySelectorAll('.ctry-btn').forEach(b=>b.classList.add('on'));
+  drawCompare();
+}
+function selNone(){
+  S.ctry.clear();
+  document.querySelectorAll('.ctry-btn').forEach(b=>b.classList.remove('on'));
+  drawCompare();
+}
+function selGainers(){
+  S.ctry.clear();
+  document.querySelectorAll('.ctry-btn').forEach(b=>{
+    const c=b.dataset.ctry;
+    const gain=RD[c].b-RD[c].a;
+    if(gain>20){S.ctry.add(c);b.classList.add('on');}else b.classList.remove('on');
+  });
+  drawCompare();
+}
+function drawCompare(){
+  const dk=S.theme==='dark';
+  const traces=[];
+  Array.from(S.ctry).forEach(c=>{
+    const d=RD[c], gain=d.b-d.a;
+    const col=gain>30?'#1A5276':gain>15?'#2471A3':gain>5?'#7FB3D3':'#C0392B';
+    traces.push({
+      x:[2005,2022],y:[d.a,d.b],mode:'lines+markers+text',name:c,
+      line:{color:col,width:1.8,shape:'linear'},marker:{color:col,size:5.5},
+      text:['',d.b.toFixed(0)+'%'],textposition:'middle right',
+      textfont:{size:9.5,color:col},
+      hovertemplate:`<b>${c}</b><br>2005: ${d.a}%<br>2022: ${d.b}%<br>Change: ${gain>0?'+':''}${gain.toFixed(1)} pp<extra></extra>`
+    });
+    traces.push({
+      x:[2005],y:[d.a],mode:'text',name:c+'_l',showlegend:false,
+      text:[d.a.toFixed(0)+'% '+c],textposition:'middle left',
+      textfont:{size:8.5,color:col},hoverinfo:'skip'
+    });
+  });
+
+  Plotly.react('chart-compare',traces,base({
+    xaxis:{tickvals:[2005,2022],ticktext:['2005','2022'],showgrid:false,
+      zeroline:false,range:[1988,2035],
+      tickfont:{size:12,color:dk?'#E6EDF3':'#1C2833',bold:true},
+      color:dk?'#8B949E':'#555'},
+    yaxis:{ticksuffix:'%',showgrid:false,zeroline:false,range:[-5,110],
+      color:dk?'#8B949E':'#555'},
+    showlegend:false,margin:{t:30,r:55,b:44,l:70}
+  }),CFG);
+}
+
+/* ── DOWNLOAD ───────────────────────────────────────────────────────────── */
+function dlChart(){
+  const ids={overview:'mini-temp',temperature:'chart-temp',
+    energy:'chart-energy',map:'chart-map',compare:'chart-compare'};
+  const id=ids[S.tab];
+  if(id&&document.getElementById(id)){
+    Plotly.downloadImage(id,{
+      format:'png',width:1600,height:900,scale:2,
+      filename:'climate-dashboard-'+S.tab
+    });
+  }
+}
+
+/* ── KEYBOARD ───────────────────────────────────────────────────────────── */
+const TABS=['overview','temperature','energy','map','compare'];
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return;
+  const i=TABS.indexOf(S.tab);
+  if(e.key==='ArrowRight'&&i<TABS.length-1) switchTab(TABS[i+1]);
+  else if(e.key==='ArrowLeft'&&i>0) switchTab(TABS[i-1]);
+  else if(e.key===' '){e.preventDefault();togglePlay();}
+});
+
+/* ── TAB DELEGATION ─────────────────────────────────────────────────────── */
+document.getElementById('tabbar').addEventListener('click',e=>{
+  const b=e.target.closest('[data-tab]');
+  if(b) switchTab(b.dataset.tab);
+});
+
+/* ── PILL SYNC ──────────────────────────────────────────────────────────── */
+['co2','roll','paris'].forEach(id=>{
+  const chk=document.getElementById('chk-'+id);
+  if(chk) chk.addEventListener('change',()=>{syncPills();drawTemp();});
+});
+
+/* ── INIT ───────────────────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded',()=>{
+  initSliders();
+  initSrcPills();
+  initCtryBtns();
+  updateInsights();
+  const h=location.hash.replace('#','');
+  if(TABS.includes(h)) switchTab(h);
+  else drawOverview();
+});
+</script>
+</body>
+</html>
