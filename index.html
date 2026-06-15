@@ -179,10 +179,9 @@ const DECADES = [
 ];
 
 /* ── COLOR ────────────────────────────────────────────────────────────── */
-const V_MIN=3.41, V_MAX=7.84;
 const STOPS=[{t:0,r:146,g:39,b:30},{t:.30,r:215,g:110,b:60},{t:.58,r:170,g:180,b:190},{t:1,r:26,g:82,b:118}];
-function valColor(v){
-  const t=Math.max(0,Math.min(1,(v-V_MIN)/(V_MAX-V_MIN)));
+function valColor(v, vMin, vMax){
+  const t=Math.max(0,Math.min(1,(v-vMin)/(vMax-vMin)));
   let lo=STOPS[0],hi=STOPS[1];
   for(let i=0;i<STOPS.length-1;i++) if(t>=STOPS[i].t&&t<=STOPS[i+1].t){lo=STOPS[i];hi=STOPS[i+1];break;}
   const s=(t-lo.t)/(hi.t-lo.t);
@@ -243,9 +242,10 @@ function draw(){
 
   if(S.showDecades){
     const dp=decPairs();
+    const dvs=dp.map(p=>p.v), dMin=Math.min(...dvs), dMax=Math.max(...dvs);
     traces=[{
-      x:dp.map(p=>p.y), y:dp.map(p=>p.v), type:'bar',
-      marker:{color:dp.map(p=>valColor(p.v))},
+      x:dp.map(p=>p.y), y:dvs, type:'bar',
+      marker:{color:dvs.map(v=>valColor(v,dMin,dMax))},
       error_y:{type:'data',symmetric:false,
         array:dp.map(p=>+(p.hi-p.v).toFixed(2)),
         arrayminus:dp.map(p=>+(p.v-p.lo).toFixed(2)),
@@ -264,11 +264,12 @@ function draw(){
 
     const xs=pairs.map(p=>String(p.y));
     const vs=pairs.map(p=>p.v);
+    const vMin=Math.min(...vs), vMax=Math.max(...vs);
 
     traces=[{
       x:xs, y:vs, type:'bar',
       marker:{
-        color:vs.map(valColor),
+        color:vs.map(v=>valColor(v,vMin,vMax)),
         line:{
           color:xs.map(x=>+x===S.selYear?(dk?'#fff':'#1D1D1F'):'transparent'),
           width:xs.map(x=>+x===S.selYear?2:0)
